@@ -308,6 +308,7 @@ function App() {
   const [loginError, setLoginError] = useState('');
   const [generatedOtp, setGeneratedOtp] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [loginNotification, setLoginNotification] = useState('');
 
   const handleSocialLogin = (provider) => {
     let email = 'jayesh@acme.com';
@@ -330,7 +331,7 @@ function App() {
     setLoginError('');
     setLoginStep('otp');
     console.log(`[${provider} Auth OTP Code]: ${otp}`);
-    alert(`[${provider} Verification Code sent to +91 ${phone}]: Use code ${otp} to verify.`);
+    setLoginNotification(`[${provider} Verification Code sent to +91 ${phone}]: Use code ${otp} to verify.`);
   };
 
   const handleCredentialsSubmit = (e) => {
@@ -350,7 +351,7 @@ function App() {
     setLoginError('');
     setLoginStep('otp');
     console.log(`[Email Auth OTP Code]: ${otp}`);
-    alert(`[Verification Code sent to +91 ${loginPhone}]: Use code ${otp} to verify.`);
+    setLoginNotification(`[Verification Code sent to +91 ${loginPhone}]: Use code ${otp} to verify.`);
   };
 
   const handleCreateAccountTrigger = (e) => {
@@ -369,7 +370,7 @@ function App() {
     setLoginError('');
     setLoginStep('otp');
     console.log(`[Registration OTP Code]: ${otp}`);
-    alert(`[Account Registration Code sent to +91 ${loginPhone}]: Use code ${otp} to verify.`);
+    setLoginNotification(`[Account Registration Code sent to +91 ${loginPhone}]: Use code ${otp} to verify.`);
   };
 
   const handleOtpVerify = (e) => {
@@ -420,6 +421,7 @@ function App() {
       setLoginPassword('');
       setLoginOtp('');
       setLoginError('');
+      setLoginNotification('');
       
       if (redirectAfterLogin) {
         setView(redirectAfterLogin);
@@ -434,6 +436,7 @@ function App() {
     setIsLoggedIn(false);
     setUser(null);
     setLoginStep('credentials');
+    setLoginNotification('');
     setView('home');
   };
 
@@ -998,6 +1001,13 @@ function App() {
                       A text message with a 6-digit verification code was sent to <strong>+91 {loginPhone}</strong>.
                     </p>
 
+                    {loginNotification && (
+                      <div className="notificationBanner" style={styles.notificationBanner}>
+                        <span style={{ marginRight: '8px', fontSize: '16px' }}>✉️</span>
+                        <span>{loginNotification}</span>
+                      </div>
+                    )}
+
                     {isLoggingIn ? (
                       <div style={styles.loadingBox}>
                         <div className="loading-spinner" style={styles.spinner}></div>
@@ -1031,7 +1041,7 @@ function App() {
                         <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
                           <button 
                             type="button" 
-                            onClick={() => setLoginStep('credentials')} 
+                            onClick={() => { setLoginStep('credentials'); setLoginNotification(''); }} 
                             className="btn btn-outline" 
                             style={{ flex: 1, padding: '10px' }}
                           >
@@ -1524,6 +1534,19 @@ const styles = {
     padding: '4px',
     display: 'flex',
     alignItems: 'center',
+  },
+  notificationBanner: {
+    backgroundColor: '#e6f4ea',
+    color: '#137333',
+    padding: '12px 16px',
+    borderRadius: '8px',
+    fontSize: '13px',
+    fontWeight: '500',
+    marginBottom: '20px',
+    border: '1px solid #ceead6',
+    display: 'flex',
+    alignItems: 'center',
+    lineHeight: '1.4',
   },
   loginDivider: {
     display: 'flex',
