@@ -1,0 +1,1165 @@
+import React, { useState, useEffect } from 'react';
+import PromoBar from './components/PromoBar';
+import Header from './components/Header';
+import HeroSlider from './components/HeroSlider';
+import Categories from './components/Categories';
+import ProductSection from './components/ProductSection';
+import Customizer from './components/Customizer';
+import CartDrawer from './components/CartDrawer';
+import Checkout from './components/Checkout';
+import Footer from './components/Footer';
+
+// Full product catalog data from Vistaprint India homepage JSON
+const PRODUCT_CATALOG = [
+  // Visiting Cards
+  {
+    id: 'standardBusinessCards',
+    name: 'Standard Visiting Cards',
+    category: 'visiting-cards',
+    categoryName: 'Visiting Cards',
+    price: 200,
+    image: 'https://cms.cloudinary.vpsvc.com/image/upload/c_scale,dpr_auto,f_auto,w_450/India%20LOB/New%20Vistaprint%20Core%20Website/NVHP%20Tiles/IN_NVHPTiles_VistingCards_01',
+    rating: 4.8,
+    reviewsCount: 124,
+    offerText: 'BUY 100 @ Rs.200',
+    tag: 'POPULAR'
+  },
+  {
+    id: 'roundedCornerBusinessCards',
+    name: 'Rounded Corner Visiting Cards',
+    category: 'visiting-cards',
+    categoryName: 'Visiting Cards',
+    price: 250,
+    image: 'https://cms.cloudinary.vpsvc.com/image/upload/c_scale,dpr_auto,f_auto,w_450/India%20LOB/NVHP/New%20Home%20Page/NEW%20-%20NVHP%20Tiles/Trending%20Products/Rounded-Corner-Visiting-Cards_01',
+    rating: 4.7,
+    reviewsCount: 86,
+    offerText: 'BUY 100 @ Rs.250',
+    tag: 'NEW'
+  },
+  
+  // Stationery
+  {
+    id: 'letterhead',
+    name: 'Premium Letterheads',
+    category: 'stationery',
+    categoryName: 'Custom Stationery',
+    price: 230,
+    image: 'https://cms.cloudinary.vpsvc.com/image/upload/c_scale,dpr_auto,f_auto,w_450/India%20LOB/NVHP/New%20Home%20Page/NEW%20-%20NVHP%20Tiles/Our%20Most%20Popular%20Products/IN_NVHPTiles_Letterheads_01',
+    rating: 4.6,
+    reviewsCount: 52,
+    offerText: 'BUY 10 @ Rs.230',
+    tag: ''
+  },
+  
+  // Photo Gifts
+  {
+    id: 'photobook',
+    name: 'Personalised Photo Albums',
+    category: 'photo-gifts',
+    categoryName: 'Photo Gifts',
+    price: 715,
+    image: 'https://cms.cloudinary.vpsvc.com/image/upload/c_scale,dpr_auto,f_auto,w_450/India%20LOB/NVHP/New%20Home%20Page/NEW%20-%20NVHP%20Tiles/Our%20Most%20Popular%20Products/IN_NVHPTiles_Photo-Albums_01',
+    rating: 4.9,
+    reviewsCount: 148,
+    offerText: 'BUY 1 @ Rs.715',
+    tag: 'POPULAR'
+  },
+  
+  // Stickers & Labels
+  {
+    id: 'stickers',
+    name: 'Custom Stickers',
+    category: 'labels-packaging',
+    categoryName: 'Labels & Stickers',
+    price: 150,
+    image: 'https://cms.cloudinary.vpsvc.com/image/upload/c_scale,dpr_auto,f_auto,w_450/India%20LOB/NVHP/New%20Home%20Page/NEW%20-%20NVHP%20Tiles/Labels%2C%20Stickers%20and%20Packaging/Custom-Stickers-01',
+    rating: 4.5,
+    reviewsCount: 64,
+    offerText: 'BUY 10 @ Rs.150',
+    tag: '5% OFF'
+  },
+  {
+    id: 'sheetStickers',
+    name: 'Custom Sheet Stickers',
+    category: 'labels-packaging',
+    categoryName: 'Labels & Stickers',
+    price: 160,
+    image: 'https://cms.cloudinary.vpsvc.com/image/upload/c_scale,dpr_auto,f_auto,w_450/India%20LOB/NVHP/New%20Home%20Page/NEW%20-%20NVHP%20Tiles/Labels%2C%20Stickers%20and%20Packaging/Sheet-Stickers_01',
+    rating: 4.5,
+    reviewsCount: 41,
+    offerText: 'BUY 24 @ Rs. 160',
+    tag: ''
+  },
+  {
+    id: 'productLabels',
+    name: 'Product & Packaging Labels',
+    category: 'labels-packaging',
+    categoryName: 'Labels & Stickers',
+    price: 160,
+    image: 'https://cms.cloudinary.vpsvc.com/image/upload/c_scale,dpr_auto,f_auto,w_450/India%20LOB/NVHP/New%20Home%20Page/Explore%20More/Product-_-Packaging-Labels01',
+    rating: 4.6,
+    reviewsCount: 77,
+    offerText: 'BUY 24 @ Rs.160',
+    tag: 'POPULAR'
+  },
+  {
+    id: 'customShapeSticker',
+    name: 'Custom Shape Stickers',
+    category: 'labels-packaging',
+    categoryName: 'Labels & Stickers',
+    price: 190,
+    image: 'https://cms.cloudinary.vpsvc.com/image/upload/c_scale,dpr_auto,f_auto,w_450/India%20LOB/NVHP/New%20Home%20Page/NEW%20-%20NVHP%20Tiles/Labels%2C%20Stickers%20and%20Packaging/Custom-Shape-Stickers_01',
+    rating: 4.7,
+    reviewsCount: 39,
+    offerText: 'BUY 10 @ Rs. 190',
+    tag: 'NEW'
+  },
+
+  // Clothing & Bags
+  {
+    id: 'embroideredMensPoloTShirts',
+    name: "Men's Polo T-Shirts",
+    category: 'polo-shirts',
+    categoryName: 'Clothing & Apparel',
+    price: 570,
+    image: 'https://cms.cloudinary.vpsvc.com/image/upload/c_scale,dpr_auto,f_auto,w_450/India%20LOB/NVHP/New%20Home%20Page/NEW%20-%20NVHP%20Tiles/Top%20Selling%20Bulk%20Products/IN_NVHPTiles_PoloT-Shirts_01',
+    rating: 4.7,
+    reviewsCount: 210,
+    offerText: 'BUY 1 @ Rs.570',
+    tag: 'BESTSELLER'
+  },
+  {
+    id: 'pumaPoloTShirtsIndia',
+    name: 'Puma® Polo T-shirts',
+    category: 'polo-shirts',
+    categoryName: 'Clothing & Apparel',
+    price: 1640,
+    image: 'https://cms.cloudinary.vpsvc.com/image/upload/c_scale,dpr_auto,f_auto,w_450/India%20LOB/NVHP/New%20Home%20Page/NEW%20-%20NVHP%20Tiles/Top%20Selling%20Bulk%20Products/IN_NVHPTiles_Puma-Polo-T-shirts-01',
+    rating: 4.8,
+    reviewsCount: 94,
+    offerText: 'BUY 1 @ Rs.1640',
+    tag: 'NEW'
+  },
+  {
+    id: 'customMugWhite',
+    name: 'Personalised White Mugs',
+    category: 'photo-gifts',
+    categoryName: 'Photo Gifts',
+    price: 280,
+    image: 'https://cms.cloudinary.vpsvc.com/image/upload/c_scale,dpr_auto,f_auto,w_450/India%20LOB/NVHP/New%20Home%20Page/NEW%20-%20NVHP%20Tiles/Top%20Selling%20Bulk%20Products/IN_NVHPTiles_Mugs_03',
+    rating: 4.6,
+    reviewsCount: 185,
+    offerText: 'BUY 1 @ Rs.280',
+    tag: 'POPULAR'
+  },
+  {
+    id: 'printedToteBags',
+    name: 'Printed Tote Bags',
+    category: 'bags',
+    categoryName: 'Custom Bags',
+    price: 330,
+    image: 'https://cms.cloudinary.vpsvc.com/image/upload/c_scale,dpr_auto,f_auto,w_450/India%20LOB/NVHP/New%20Home%20Page/NEW%20-%20NVHP%20Tiles/Top%20Selling%20Bulk%20Products/IN_Tote-Bags_01',
+    rating: 4.4,
+    reviewsCount: 68,
+    offerText: 'BUY 1 @ Rs.330',
+    tag: ''
+  },
+
+  // Stamps & Ink
+  {
+    id: 'selfInkingStamps',
+    name: 'Self Inking Stamps',
+    category: 'stamps-ink',
+    categoryName: 'Stamps & Ink',
+    price: 310,
+    image: 'https://cms.cloudinary.vpsvc.com/image/upload/c_scale,dpr_auto,f_auto,w_450/India%20LOB/New%20Vistaprint%20Core%20Website/NVHP%20Tiles/IN_NVHPTiles_Stamps_01',
+    rating: 4.7,
+    reviewsCount: 110,
+    offerText: 'BUY 1 @ Rs.310',
+    tag: ''
+  },
+
+  // Rainwear & Umbrellas
+  {
+    id: 'singleFoldUmbrella',
+    name: 'Single Fold Umbrellas',
+    category: 'rainwear',
+    categoryName: 'Rainwear',
+    price: 860,
+    image: 'https://cms.cloudinary.vpsvc.com/image/upload/c_scale,dpr_auto,f_auto,w_450/India%20LOB/NVHP/New%20Home%20Page/NEW%20-%20NVHP%20Tiles/Trending%20Products/Single-Fold-Umbrellas_01',
+    rating: 4.5,
+    reviewsCount: 33,
+    offerText: 'BUY 1 @ Rs. 860',
+    tag: 'NEW'
+  }
+];
+
+const CATEGORIES = [
+  { 
+    id: 'visiting-cards', 
+    name: 'Visiting Cards', 
+    subcategories: [
+      { name: 'Standard Visiting Cards', productId: 'standardBusinessCards' },
+      { name: 'Rounded Corner Cards', productId: 'roundedCornerBusinessCards' }
+    ]
+  },
+  { 
+    id: 'stationery', 
+    name: 'Stationery & Notebooks',
+    subcategories: [
+      { name: 'Premium Letterheads', productId: 'letterhead' }
+    ]
+  },
+  { 
+    id: 'polo-shirts', 
+    name: 'Custom Polo T-Shirts',
+    subcategories: [
+      { name: "Men's Polo T-Shirts", productId: 'embroideredMensPoloTShirts' },
+      { name: 'Puma® Polo T-shirts', productId: 'pumaPoloTShirtsIndia' }
+    ]
+  },
+  { 
+    id: 'photo-gifts', 
+    name: 'Photo Mugs & Albums',
+    subcategories: [
+      { name: 'Personalised White Mugs', productId: 'customMugWhite' },
+      { name: 'Photo Albums', productId: 'photobook' }
+    ]
+  },
+  { 
+    id: 'labels-packaging', 
+    name: 'Labels & Stickers',
+    subcategories: [
+      { name: 'Custom Stickers', productId: 'stickers' },
+      { name: 'Sheet Stickers', productId: 'sheetStickers' },
+      { name: 'Product Labels', productId: 'productLabels' }
+    ]
+  },
+  { 
+    id: 'bags', 
+    name: 'Custom Bags',
+    subcategories: [
+      { name: 'Printed Tote Bags', productId: 'printedToteBags' }
+    ]
+  },
+  { 
+    id: 'stamps-ink', 
+    name: 'Stamps & Ink',
+    subcategories: [
+      { name: 'Self Inking Stamps', productId: 'selfInkingStamps' }
+    ]
+  },
+  { 
+    id: 'rainwear', 
+    name: 'Rainwear',
+    subcategories: [
+      { name: 'Single Fold Umbrellas', productId: 'singleFoldUmbrella' }
+    ]
+  }
+];
+
+function App() {
+  const [view, setView] = useState('home'); // 'home' | 'customizer' | 'checkout' | 'success' | 'favorites' | 'account'
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  
+  // Theme state
+  const [theme, setTheme] = useState('light');
+  
+  // Printing queue simulator step
+  const [printingStep, setPrintingStep] = useState(1);
+
+  // Authentication states
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState(null);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [redirectAfterLogin, setRedirectAfterLogin] = useState(null);
+
+  const handleGoogleLogin = () => {
+    setIsLoggingIn(true);
+    setTimeout(() => {
+      setIsLoggingIn(false);
+      setIsLoggedIn(true);
+      setUser({
+        name: 'Jayesh Sharma',
+        email: 'jayesh@acme.com',
+        initials: 'JS',
+        level: 'VIP Corporate',
+        wallet: 450
+      });
+      if (redirectAfterLogin) {
+        setView(redirectAfterLogin);
+        setRedirectAfterLogin(null);
+      } else {
+        setView('account');
+      }
+    }, 1200);
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setUser(null);
+    setView('home');
+  };
+
+  const handleToggleTheme = () => {
+    const nextTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(nextTheme);
+    if (nextTheme === 'dark') {
+      document.body.classList.add('dark-theme');
+    } else {
+      document.body.classList.remove('dark-theme');
+    }
+  };
+
+  // Run printing simulator on success screen
+  useEffect(() => {
+    if (view === 'success') {
+      setPrintingStep(1);
+      const t1 = setTimeout(() => setPrintingStep(2), 3000);
+      const t2 = setTimeout(() => setPrintingStep(3), 6000);
+      const t3 = setTimeout(() => setPrintingStep(4), 10000);
+      const t4 = setTimeout(() => setPrintingStep(5), 14000);
+      return () => {
+        clearTimeout(t1);
+        clearTimeout(t2);
+        clearTimeout(t3);
+        clearTimeout(t4);
+      };
+    }
+  }, [view]);
+  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('all');
+  const [searchFilter, setSearchFilter] = useState('');
+  
+  // Global Shopping Cart
+  const [cart, setCart] = useState([]);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [checkoutPriceBreakup, setCheckoutPriceBreakup] = useState({ total: 0, discount: 0 });
+
+  // Favorites/Wishlist
+  const [favorites, setFavorites] = useState([]);
+
+  // Successful Order receipt
+  const [orderReceipt, setOrderReceipt] = useState(null);
+
+  // User Order History Mock
+  const [orderHistory, setOrderHistory] = useState([
+    { id: 'IS-84291-IN', date: '2026-04-12', items: '100 Standard Visiting Cards', total: 200, status: 'Delivered ✓' },
+    { id: 'IS-91028-IN', date: '2026-05-18', items: "2 Men's Polo T-Shirts", total: 1140, status: 'Delivered ✓' }
+  ]);
+
+  // Handle wishlist toggle
+  const handleToggleFav = (productId) => {
+    setFavorites(prev => 
+      prev.includes(productId) 
+        ? prev.filter(id => id !== productId)
+        : [...prev, productId]
+    );
+  };
+
+  // Select product to customize
+  const handleSelectProduct = (productId) => {
+    const prod = PRODUCT_CATALOG.find(p => p.id === productId);
+    if (prod) {
+      setSelectedProduct(prod);
+      setView('customizer');
+      window.scrollTo(0, 0);
+    }
+  };
+
+  // Navigations
+  const handleNavigate = (target) => {
+    setView(target);
+    setSearchFilter('');
+    
+    // Check if target is a category filter
+    const foundCat = CATEGORIES.find(c => c.id === target);
+    if (foundCat) {
+      setSelectedCategoryFilter(target);
+      setView('home');
+    } else if (target === 'home') {
+      setSelectedCategoryFilter('all');
+    }
+    window.scrollTo(0, 0);
+  };
+
+  // Search logic
+  const handleSearch = (query) => {
+    setSearchFilter(query);
+    setSelectedCategoryFilter('all');
+    setView('home');
+  };
+
+  // Cart operations
+  const handleAddToCart = (cartItem) => {
+    setCart(prev => [...prev, cartItem]);
+    setView('home');
+    setIsCartOpen(true);
+  };
+
+  const handleUpdateQty = (index, newQty) => {
+    setCart(prev => prev.map((item, idx) => {
+      if (idx === index) {
+        // Calculate new total based on quantities
+        const originalUnitPrice = item.config ? item.config.unitPrice : (item.price / item.quantity);
+        return {
+          ...item,
+          quantity: newQty,
+          price: Math.round(originalUnitPrice * newQty)
+        };
+      }
+      return item;
+    }));
+  };
+
+  const handleRemoveItem = (index) => {
+    setCart(prev => prev.filter((_, idx) => idx !== index));
+  };
+
+  const handleCheckout = (grandTotal, promoDiscount) => {
+    setCheckoutPriceBreakup({ total: grandTotal, discount: promoDiscount });
+    setIsCartOpen(false);
+    if (!isLoggedIn) {
+      setRedirectAfterLogin('checkout');
+      setView('account');
+    } else {
+      setView('checkout');
+    }
+    window.scrollTo(0, 0);
+  };
+
+  const handleOrderSuccess = (receipt) => {
+    setOrderReceipt(receipt);
+    
+    // Add to order history
+    const itemSummaries = cart.map(c => `${c.quantity} ${c.name}`).join(', ');
+    const newOrder = {
+      id: receipt.orderId,
+      date: new Date().toISOString().split('T')[0],
+      items: itemSummaries,
+      total: receipt.payable,
+      status: 'Printing In Progress 🖨️'
+    };
+    
+    setOrderHistory(prev => [newOrder, ...prev]);
+    setCart([]); // Clear cart
+    setView('success');
+    window.scrollTo(0, 0);
+  };
+
+  // Filter products based on search/category filters
+  const getFilteredProducts = () => {
+    let list = PRODUCT_CATALOG;
+    if (selectedCategoryFilter !== 'all') {
+      list = list.filter(p => p.category === selectedCategoryFilter);
+    }
+    if (searchFilter.trim().length > 0) {
+      list = list.filter(p => 
+        p.name.toLowerCase().includes(searchFilter.toLowerCase()) ||
+        p.categoryName.toLowerCase().includes(searchFilter.toLowerCase())
+      );
+    }
+    return list;
+  };
+
+  const filteredProducts = getFilteredProducts();
+
+  return (
+    <div className="App">
+      {/* 1. Promotional code bar */}
+      <PromoBar />
+
+      {/* 2. Dynamic Sticky Header */}
+      <Header 
+        cartCount={cart.length}
+        favCount={favorites.length}
+        onNavigate={handleNavigate}
+        onSearch={handleSearch}
+        onToggleCart={() => setIsCartOpen(true)}
+        currentTab={selectedCategoryFilter}
+        categories={CATEGORIES}
+        onSelectProduct={handleSelectProduct}
+        theme={theme}
+        onToggleTheme={handleToggleTheme}
+        isLoggedIn={isLoggedIn}
+        user={user}
+      />
+
+      {/* 3. Main Routing Section */}
+      <main style={{ minHeight: '60vh' }}>
+        {view === 'home' && (
+          <>
+            {/* Show slider & circular categories only on the main page with no filters */}
+            {selectedCategoryFilter === 'all' && !searchFilter && (
+              <>
+                <HeroSlider onAction={handleNavigate} />
+                <Categories onSelectCategory={handleNavigate} />
+              </>
+            )}
+
+            {/* If a category is selected or searched, show a heading filter */}
+            {(selectedCategoryFilter !== 'all' || searchFilter) && (
+              <div className="container" style={styles.filterHeader}>
+                <h2 style={styles.filterTitle}>
+                  {searchFilter 
+                    ? `Search Results for "${searchFilter}"` 
+                    : CATEGORIES.find(c => c.id === selectedCategoryFilter)?.name}
+                </h2>
+                <button onClick={() => handleNavigate('home')} style={styles.clearFilterBtn}>
+                  Clear Filters ✕
+                </button>
+              </div>
+            )}
+
+            {/* Render items by shelves */}
+            {selectedCategoryFilter === 'all' && !searchFilter ? (
+              <>
+                <ProductSection 
+                  title="Our Most Popular Products"
+                  products={PRODUCT_CATALOG.filter(p => p.tag === 'POPULAR' || p.tag === 'BESTSELLER')}
+                  onSelectProduct={handleSelectProduct}
+                  onToggleFav={handleToggleFav}
+                  favorites={favorites}
+                />
+                
+                <ProductSection 
+                  title="Trending Business Prints"
+                  products={PRODUCT_CATALOG.filter(p => p.tag === 'NEW' || p.category === 'visiting-cards')}
+                  onSelectProduct={handleSelectProduct}
+                  onToggleFav={handleToggleFav}
+                  favorites={favorites}
+                />
+
+                <ProductSection 
+                  title="Labels, Stickers & Custom Packaging"
+                  products={PRODUCT_CATALOG.filter(p => p.category === 'labels-packaging')}
+                  onSelectProduct={handleSelectProduct}
+                  onToggleFav={handleToggleFav}
+                  favorites={favorites}
+                />
+              </>
+            ) : (
+              // Filtered list
+              <ProductSection 
+                title={`${filteredProducts.length} Items Available`}
+                products={filteredProducts}
+                onSelectProduct={handleSelectProduct}
+                onToggleFav={handleToggleFav}
+                favorites={favorites}
+              />
+            )}
+          </>
+        )}
+
+        {/* Live Customizer Studio */}
+        {view === 'customizer' && selectedProduct && (
+          <Customizer 
+            product={selectedProduct}
+            onAddToCart={handleAddToCart}
+            onGoBack={() => setView('home')}
+          />
+        )}
+
+        {/* Secure Checkout Form */}
+        {view === 'checkout' && (
+          <Checkout 
+            cartItems={cart}
+            grandTotal={checkoutPriceBreakup.total}
+            promoDiscount={checkoutPriceBreakup.discount}
+            onOrderSuccess={handleOrderSuccess}
+            onGoBack={() => setView('home')}
+            user={user}
+          />
+        )}
+
+        {/* Order Success Summary screen */}
+        {view === 'success' && orderReceipt && (
+          <div className="container animate-fade-in" style={styles.successScreen}>
+            <div style={styles.successCard}>
+              <span style={styles.successIcon}>🎉</span>
+              <h1 style={styles.successTitle}>Order Placed Successfully!</h1>
+              <p style={styles.successMessage}>
+                Thank you for your order, <strong>{orderReceipt.shippingName}</strong>. InfiStyle has received your design and started the high-quality printing process!
+              </p>
+              
+              <div style={styles.receiptBox}>
+                <div style={styles.receiptRow}>
+                  <span>Order Receipt ID:</span>
+                  <strong>{orderReceipt.orderId}</strong>
+                </div>
+                <div style={styles.receiptRow}>
+                  <span>Total Payable:</span>
+                  <strong>₹{orderReceipt.payable}</strong>
+                </div>
+                <div style={styles.receiptRow}>
+                  <span>Items:</span>
+                  <strong>{orderReceipt.itemsCount} Customized Templates</strong>
+                </div>
+                <div style={styles.receiptRow}>
+                  <span>Delivery Destination:</span>
+                  <span style={{textAlign: 'right', maxWidth: '60%'}}>{orderReceipt.shippingAddress}</span>
+                </div>
+              </div>
+
+              {/* Interactive Printing Tracker Simulator */}
+              <div style={styles.trackerContainer}>
+                <h3 style={styles.trackerTitle}>Live Printing Queue Status</h3>
+                <div style={styles.trackerSteps}>
+                  {[
+                    { label: 'Received', icon: '📥', step: 1 },
+                    { label: 'Proofed', icon: '🔍', step: 2 },
+                    { label: 'Printing', icon: '🖨️', step: 3 },
+                    { label: 'QC Audit', icon: '✨', step: 4 },
+                    { label: 'Shipped', icon: '🚚', step: 5 }
+                  ].map((s) => {
+                    const isActive = printingStep >= s.step;
+                    const isCurrent = printingStep === s.step;
+                    return (
+                      <div key={s.step} style={styles.trackerStep}>
+                        <div 
+                          style={{
+                            ...styles.trackerIconWrapper,
+                            backgroundColor: isActive ? 'var(--color-secondary)' : '#e4e5e9',
+                            color: isActive ? '#ffffff' : 'var(--color-text-muted)',
+                            boxShadow: isCurrent ? '0 0 12px rgba(12, 114, 169, 0.4)' : 'none',
+                            transform: isCurrent ? 'scale(1.15)' : 'scale(1)'
+                          }}
+                          className={isCurrent ? 'animate-pulse' : ''}
+                        >
+                          {s.icon}
+                        </div>
+                        <span 
+                          style={{
+                            ...styles.trackerLabel,
+                            fontWeight: isCurrent ? '700' : '400',
+                            color: isActive ? 'var(--color-text-dark)' : 'var(--color-text-muted)'
+                          }}
+                        >
+                          {s.label}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+                {/* Progress status note */}
+                <p style={styles.statusNote}>
+                  {printingStep === 1 && '📥 Your custom layout is locked and saved.'}
+                  {printingStep === 2 && '🔍 Pre-flight files checked and approved by proofers.'}
+                  {printingStep === 3 && '🖨️ Designing layers on modern digital inkjet press...'}
+                  {printingStep === 4 && '✨ Scanning print density and checking edge cuts...'}
+                  {printingStep === 5 && '🚚 Package handed over to courier service. Shipped!'}
+                </p>
+              </div>
+
+              <p style={styles.satisfactionFooter}>
+                🛡️ Backed by Cimpress 100% Satisfaction Guarantee. 
+              </p>
+
+              <button className="btn btn-secondary" onClick={() => setView('home')} style={{marginTop: '20px'}}>
+                Return to Shop Home Page
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Favorites Page */}
+        {view === 'favorites' && (
+          <div className="container animate-fade-in" style={{padding: '40px 0'}}>
+            <h1 style={styles.pageHeaderTitle}>Your Favorites ❤️</h1>
+            <div style={styles.sectionDivider}></div>
+            {favorites.length === 0 ? (
+              <div style={styles.emptyMsg}>
+                <span style={{fontSize: '48px'}}>🤍</span>
+                <p>You haven't bookmarked any print designs yet.</p>
+                <button className="btn btn-primary" onClick={() => setView('home')} style={{marginTop: '16px'}}>
+                  Browse Bestsellers
+                </button>
+              </div>
+            ) : (
+              <div style={{marginTop: '32px'}}>
+                <ProductSection 
+                  title="Saved Items"
+                  products={PRODUCT_CATALOG.filter(p => favorites.includes(p.id))}
+                  onSelectProduct={handleSelectProduct}
+                  onToggleFav={handleToggleFav}
+                  favorites={favorites}
+                />
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Account Dashboard Page */}
+        {view === 'account' && (
+          !isLoggedIn ? (
+            <div className="container animate-fade-in" style={styles.loginContainer}>
+              <div style={styles.loginCard} className="glass-panel">
+                {/* Custom Brand Logo */}
+                <div style={styles.loginLogoWrapper}>
+                  <svg style={styles.loginLogo} viewBox="0 0 100 60">
+                    <path 
+                      d="M 50,30 C 35,15 20,15 20,30 C 20,45 35,45 50,30 C 65,15 80,15 80,30 C 80,45 65,45 50,30 Z" 
+                      fill="none" 
+                      stroke="url(#logoGrad)" 
+                      strokeWidth="7" 
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  <span style={styles.loginBrandText}>InfiStyle</span>
+                </div>
+                <h2 style={styles.loginTitle}>Welcome to InfiStyle</h2>
+                <p style={styles.loginSubtitle}>Sign in to customize prints, track order status, and manage your designs.</p>
+                
+                <button 
+                  onClick={handleGoogleLogin} 
+                  style={{
+                    ...styles.googleBtn,
+                    opacity: isLoggingIn ? 0.8 : 1,
+                    cursor: isLoggingIn ? 'not-allowed' : 'pointer'
+                  }} 
+                  disabled={isLoggingIn}
+                  className="google-btn"
+                >
+                  {isLoggingIn ? (
+                    <div style={styles.googleSpinner}></div>
+                  ) : (
+                    <svg style={styles.googleIcon} viewBox="0 0 24 24">
+                      <path fill="#EA4335" d="M12 5.04c1.66 0 3.2.57 4.38 1.69l3.27-3.27C17.67 1.57 15.02 1 12 1 7.35 1 3.37 3.67 1.39 7.56l3.78 2.93c.9-2.7 3.41-4.45 6.83-4.45z"/>
+                      <path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.36H12v4.51h6.46c-.29 1.48-1.14 2.73-2.4 3.58l3.73 2.89c2.18-2.01 3.7-4.99 3.7-8.62z"/>
+                      <path fill="#FBBC05" d="M5.17 10.49c-.24-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29L1.39 7.56c-.89 1.77-1.39 3.77-1.39 5.88s.5 4.11 1.39 5.88l3.78-2.93c-.24-.72-.38-1.49-.38-2.29z"/>
+                      <path fill="#34A853" d="M12 23c3.24 0 5.97-1.07 7.96-2.92l-3.73-2.89c-1.03.69-2.35 1.1-4.23 1.1-3.42 0-5.93-1.75-6.83-4.45l-3.78 2.93C3.37 20.33 7.35 23 12 23z"/>
+                    </svg>
+                  )}
+                  <span>{isLoggingIn ? 'Connecting to Google...' : 'Continue with Google'}</span>
+                </button>
+                
+                <div style={styles.loginDivider}>
+                  <span style={styles.loginDividerText}>SECURE AUTHENTICATION</span>
+                </div>
+                <p style={styles.loginFooterText}>
+                  By continuing, you agree to InfiStyle's Terms of Service and Privacy Policy.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="container animate-fade-in" style={{padding: '40px 0'}}>
+              <h1 style={styles.pageHeaderTitle}>Account Dashboard 👤</h1>
+              <div style={styles.sectionDivider}></div>
+              
+              <div style={styles.accountLayout}>
+                {/* Profile card */}
+                <div style={styles.profileCard}>
+                  <div style={styles.avatar}>{user?.initials || 'JS'}</div>
+                  <h3 style={styles.profileName}>{user?.name || 'Jayesh Sharma'}</h3>
+                  <span style={styles.profileMail}>{user?.email || 'jayesh@acme.com'}</span>
+                  <div style={styles.sectionDivider}></div>
+                  <div style={styles.profileDetail}>
+                    <span>Customer Level:</span>
+                    <strong>{user?.level || 'VIP Corporate'}</strong>
+                  </div>
+                  <div style={styles.profileDetail}>
+                    <span>InfiStyle Wallet:</span>
+                    <strong style={{color: 'var(--color-success)'}}>₹{user?.wallet ?? 450}</strong>
+                  </div>
+                  <button 
+                    onClick={handleLogout} 
+                    className="btn btn-outline" 
+                    style={{marginTop: '24px', width: '100%', padding: '12px'}}
+                  >
+                    Sign Out ➔
+                  </button>
+                </div>
+
+                {/* Order history list */}
+                <div style={styles.historyCard}>
+                  <h3 style={styles.historyTitle}>Your Order History</h3>
+                  <div style={styles.historyList}>
+                    {orderHistory.map(ord => (
+                      <div key={ord.id} style={styles.historyItem}>
+                        <div style={styles.historyDetails}>
+                          <strong>Order {ord.id}</strong>
+                          <span style={styles.historyDate}>Date: {ord.date}</span>
+                          <span style={styles.historyDesc}>{ord.items}</span>
+                        </div>
+                        <div style={styles.historySum}>
+                          <strong>₹{ord.total}</strong>
+                          <span style={{
+                            ...styles.historyStatus, 
+                            color: ord.status.includes('Delivered') ? 'var(--color-success)' : '#d4620b'
+                          }}>
+                            {ord.status}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )
+        )}
+      </main>
+
+      {/* 4. Slide-out Cart Sidebar Drawer */}
+      <CartDrawer 
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
+        cartItems={cart}
+        onUpdateQty={handleUpdateQty}
+        onRemoveItem={handleRemoveItem}
+        onCheckout={handleCheckout}
+      />
+
+      {/* 5. Footer */}
+      <Footer onNavigate={handleNavigate} />
+    </div>
+  );
+}
+
+const styles = {
+  filterHeader: {
+    padding: '30px 0 10px',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  filterTitle: {
+    fontSize: '24px',
+    fontWeight: '700',
+    color: 'var(--color-primary)',
+  },
+  clearFilterBtn: {
+    fontSize: '13px',
+    color: 'var(--color-error)',
+    fontWeight: '600',
+    border: '1px solid var(--color-error)',
+    padding: '6px 12px',
+    borderRadius: 'var(--radius-sm)',
+    transition: 'var(--transition-fast)',
+  },
+  successScreen: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '60px 0 100px',
+  },
+  successCard: {
+    backgroundColor: '#ffffff',
+    border: '1px solid var(--color-border)',
+    boxShadow: 'var(--shadow-md)',
+    borderRadius: 'var(--radius-lg)',
+    padding: '48px',
+    maxWidth: '600px',
+    width: '100%',
+    textAlign: 'center',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+  },
+  successIcon: {
+    fontSize: '64px',
+    marginBottom: '20px',
+  },
+  successTitle: {
+    fontSize: '24px',
+    fontWeight: '700',
+    color: 'var(--color-success)',
+    marginBottom: '12px',
+  },
+  successMessage: {
+    fontSize: '14px',
+    color: 'var(--color-text-muted)',
+    marginBottom: '24px',
+    lineHeight: '1.5',
+  },
+  receiptBox: {
+    backgroundColor: 'var(--color-light-gray)',
+    width: '100%',
+    padding: '20px',
+    borderRadius: 'var(--radius-md)',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '10px',
+    marginBottom: '24px',
+  },
+  receiptRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    fontSize: '13px',
+    color: 'var(--color-text-dark)',
+  },
+  satisfactionFooter: {
+    fontSize: '12px',
+    color: 'var(--color-text-muted)',
+    fontWeight: '600',
+    marginBottom: '20px',
+  },
+  pageHeaderTitle: {
+    fontSize: '26px',
+    fontWeight: '700',
+    color: 'var(--color-primary)',
+  },
+  sectionDivider: {
+    height: '1px',
+    backgroundColor: 'var(--color-border)',
+    margin: '20px 0',
+  },
+  emptyMsg: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '80px 0',
+    textAlign: 'center',
+    color: 'var(--color-text-muted)',
+  },
+  accountLayout: {
+    display: 'flex',
+    gap: '40px',
+    marginTop: '32px',
+  },
+  profileCard: {
+    flex: '1',
+    border: '1px solid var(--color-border)',
+    borderRadius: 'var(--radius-lg)',
+    padding: '30px 24px',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    backgroundColor: '#fafafa',
+    boxShadow: 'var(--shadow-sm)',
+    height: 'fit-content',
+  },
+  avatar: {
+    width: '80px',
+    height: '80px',
+    borderRadius: '50%',
+    backgroundColor: 'var(--color-primary)',
+    color: '#ffffff',
+    fontSize: '28px',
+    fontWeight: '700',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: '16px',
+  },
+  profileName: {
+    fontSize: '18px',
+    fontWeight: '700',
+    color: 'var(--color-primary)',
+  },
+  profileMail: {
+    fontSize: '13px',
+    color: 'var(--color-text-muted)',
+    marginBottom: '10px',
+  },
+  profileDetail: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    width: '100%',
+    fontSize: '13px',
+    marginBottom: '8px',
+  },
+  historyCard: {
+    flex: '2',
+    border: '1px solid var(--color-border)',
+    borderRadius: 'var(--radius-lg)',
+    padding: '24px',
+    boxShadow: 'var(--shadow-sm)',
+  },
+  historyTitle: {
+    fontSize: '16px',
+    fontWeight: '700',
+    color: 'var(--color-primary)',
+    marginBottom: '20px',
+  },
+  historyList: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '16px',
+  },
+  historyItem: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    padding: '16px',
+    backgroundColor: '#ffffff',
+    border: '1px solid var(--color-border)',
+    borderRadius: 'var(--radius-md)',
+    transition: 'var(--transition-fast)',
+  },
+  historyDetails: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '4px',
+  },
+  historyDate: {
+    fontSize: '11px',
+    color: 'var(--color-text-muted)',
+  },
+  historyDesc: {
+    fontSize: '13px',
+    color: 'var(--color-text-dark)',
+    fontWeight: '500',
+  },
+  historySum: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+  },
+  historyStatus: {
+    fontSize: '12px',
+    fontWeight: '600',
+    marginTop: '4px',
+  },
+  trackerContainer: {
+    backgroundColor: 'var(--color-light-gray)',
+    width: '100%',
+    padding: '24px',
+    borderRadius: 'var(--radius-md)',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '16px',
+    marginBottom: '24px',
+    border: '1.5px dashed var(--color-border)',
+  },
+  trackerTitle: {
+    fontSize: '14px',
+    fontWeight: '700',
+    color: 'var(--color-primary)',
+    alignSelf: 'flex-start',
+  },
+  trackerSteps: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    width: '100%',
+    position: 'relative',
+    padding: '0 10px',
+  },
+  trackerStep: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '8px',
+    flex: 1,
+    zIndex: 2,
+  },
+  trackerIconWrapper: {
+    width: '40px',
+    height: '40px',
+    borderRadius: '50%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '18px',
+    transition: 'all 0.4s ease',
+  },
+  trackerLabel: {
+    fontSize: '11px',
+    transition: 'all 0.4s ease',
+  },
+  statusNote: {
+    fontSize: '13px',
+    fontWeight: '600',
+    color: 'var(--color-secondary)',
+    textAlign: 'center',
+    marginTop: '4px',
+  },
+  loginContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '80px 0 120px',
+  },
+  loginCard: {
+    backgroundColor: '#ffffff',
+    border: '1px solid var(--color-border)',
+    boxShadow: 'var(--shadow-lg)',
+    borderRadius: 'var(--radius-lg)',
+    padding: '40px',
+    maxWidth: '420px',
+    width: '100%',
+    textAlign: 'center',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+  },
+  loginLogoWrapper: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    marginBottom: '20px',
+  },
+  loginLogo: {
+    width: '48px',
+    height: '36px',
+  },
+  loginBrandText: {
+    fontSize: '24px',
+    fontWeight: '700',
+    color: 'var(--color-primary)',
+    letterSpacing: '-0.5px',
+  },
+  loginTitle: {
+    fontSize: '22px',
+    fontWeight: '700',
+    color: 'var(--color-primary)',
+    marginBottom: '8px',
+  },
+  loginSubtitle: {
+    fontSize: '13px',
+    color: 'var(--color-text-muted)',
+    marginBottom: '32px',
+    lineHeight: '1.5',
+  },
+  googleBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '12px',
+    backgroundColor: '#ffffff',
+    color: '#1f1f1f',
+    border: '1px solid #d1d5db',
+    borderRadius: 'var(--radius-full)',
+    padding: '12px 24px',
+    fontSize: '15px',
+    fontWeight: '600',
+    width: '100%',
+    transition: 'all 0.2s ease',
+    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)',
+  },
+  googleSpinner: {
+    width: '18px',
+    height: '18px',
+    border: '2px solid #f3f3f3',
+    borderTop: '2px solid var(--color-secondary)',
+    borderRadius: '50%',
+    animation: 'spin 0.6s linear infinite',
+  },
+  googleIcon: {
+    width: '18px',
+    height: '18px',
+  },
+  loginDivider: {
+    display: 'flex',
+    alignItems: 'center',
+    width: '100%',
+    margin: '30px 0 20px',
+  },
+  loginDividerText: {
+    fontSize: '10px',
+    color: 'var(--color-text-muted)',
+    letterSpacing: '1.5px',
+    fontWeight: '600',
+    width: '100%',
+    textAlign: 'center',
+    position: 'relative',
+  },
+  loginFooterText: {
+    fontSize: '11px',
+    color: 'var(--color-text-muted)',
+    lineHeight: '1.4',
+  }
+};
+
+export default App;
