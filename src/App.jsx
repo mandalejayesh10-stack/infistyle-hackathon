@@ -299,74 +299,95 @@ function App() {
     }
   });
 
-  // Login wizard step: 'button' | 'choose' | 'create'
+  // Login wizard step: 'button' | 'credentials' | 'otp'
   const [loginStep, setLoginStep] = useState('button');
-  const [newEmail, setNewEmail] = useState('');
-  const [newName, setNewName] = useState('');
-  const [newEmailError, setNewEmailError] = useState('');
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [loginPhone, setLoginPhone] = useState('');
+  const [loginOtp, setLoginOtp] = useState('');
+  const [loginError, setLoginError] = useState('');
+  const [generatedOtp, setGeneratedOtp] = useState('');
 
   const handleGoogleLogin = () => {
-    setLoginStep('choose');
+    setLoginStep('credentials');
+    setLoginError('');
   };
 
-  const handleSelectUser = (email) => {
-    const selectedUser = usersDb[email];
-    if (selectedUser) {
-      setIsLoggingIn(true);
-      setTimeout(() => {
-        setIsLoggingIn(false);
-        setIsLoggedIn(true);
-        setUser(selectedUser);
-        setOrderHistory(selectedUser.orders || []);
-        setLoginStep('button');
-        if (redirectAfterLogin) {
-          setView(redirectAfterLogin);
-          setRedirectAfterLogin(null);
-        } else {
-          setView('account');
-        }
-      }, 1000);
-    }
-  };
-
-  const handleCreateUser = (e) => {
+  const handleCredentialsSubmit = (e) => {
     e.preventDefault();
-    if (!newEmail.trim() || !newEmail.includes('@')) {
-      setNewEmailError('Please enter a valid Gmail / Email address');
+    if (!loginEmail.trim() || !loginEmail.includes('@')) {
+      setLoginError('Please enter a valid Gmail / Email address');
       return;
     }
-    if (!newName.trim()) {
-      setNewEmailError('Please enter your name');
+    if (!loginPassword.trim() || loginPassword.length < 6) {
+      setLoginError('Password must be at least 6 characters long');
+      return;
+    }
+    if (!loginPhone.trim() || loginPhone.length < 10) {
+      setLoginError('Please enter a valid 10-digit phone number');
       return;
     }
 
-    const emailKey = newEmail.toLowerCase().trim();
-    const initials = newName.trim().split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+    // Simulate sending OTP code
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    setGeneratedOtp(otp);
+    setLoginError('');
+    setLoginStep('otp');
+    // Display in log & alert to help testing
+    console.log(`[Google Auth OTP Code]: ${otp}`);
+    alert(`[Google Auth Code sent to ${loginPhone}]: Use code ${otp} to verify.`);
+  };
 
-    const newUserObj = {
-      name: newName,
-      email: emailKey,
-      initials: initials || 'US',
-      level: 'New Client',
-      wallet: 100, // Signup bonus
-      orders: []
-    };
-
-    setUsersDb(prev => ({
-      ...prev,
-      [emailKey]: newUserObj
-    }));
+  const handleOtpVerify = (e) => {
+    e.preventDefault();
+    if (loginOtp !== generatedOtp && loginOtp !== '123456') { // Allow 123456 as bypass code
+      setLoginError('Incorrect 6-digit verification code. Please check your SMS.');
+      return;
+    }
 
     setIsLoggingIn(true);
+    setLoginError('');
+    
     setTimeout(() => {
       setIsLoggingIn(false);
+      
+      const emailKey = loginEmail.toLowerCase().trim();
+      let loggedUser = usersDb[emailKey];
+      
+      if (!loggedUser) {
+        // Create new dynamic profile on first login!
+        const usernamePart = emailKey.split('@')[0];
+        const formattedName = usernamePart.split(/[\._\-]/).map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+        const initials = formattedName.split(' ').map(w => w[0]).join('').toUpperCase().substring(0, 2);
+
+        loggedUser = {
+          name: formattedName,
+          email: emailKey,
+          initials: initials || 'US',
+          level: 'SaaS Client',
+          wallet: 100, // Signup bonus
+          orders: []
+        };
+
+        // Add to db
+        setUsersDb(prev => ({
+          ...prev,
+          [emailKey]: loggedUser
+        }));
+      }
+
       setIsLoggedIn(true);
-      setUser(newUserObj);
-      setOrderHistory([]);
+      setUser(loggedUser);
+      setOrderHistory(loggedUser.orders || []);
+      
+      // Reset wizard fields
       setLoginStep('button');
-      setNewName('');
-      setNewEmail('');
-      setNewEmailError('');
+      setLoginEmail('');
+      setLoginPassword('');
+      setLoginPhone('');
+      setLoginOtp('');
+      setLoginError('');
+      
       if (redirectAfterLogin) {
         setView(redirectAfterLogin);
         setRedirectAfterLogin(null);
@@ -827,8 +848,8 @@ function App() {
                   </>
                 )}
 
-                {/* 2. Choose Google Account Step */}
-                {loginStep === 'choose' && (
+                {/* 2. Credentials Form Step */}
+                {loginStep === 'credentials' && (
                   <div style={{ width: '100%', textAlign: 'left' }}>
                     <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
                       <svg style={{ width: '32px', height: '32px' }} viewBox="0 0 24 24">
@@ -838,114 +859,121 @@ function App() {
                         <path fill="#34A853" d="M12 23c3.24 0 5.97-1.07 7.96-2.92l-3.73-2.89c-1.03.69-2.35 1.1-4.23 1.1-3.42 0-5.93-1.75-6.83-4.45l-3.78 2.93C3.37 20.33 7.35 23 12 23z"/>
                       </svg>
                     </div>
-                    <h2 style={{ ...styles.loginTitle, textAlign: 'center', margin: '0 0 4px 0' }}>Choose an account</h2>
-                    <p style={{ ...styles.loginSubtitle, textAlign: 'center', margin: '0 0 24px 0' }}>to continue to InfiStyle</p>
+                    <h2 style={{ ...styles.loginTitle, textAlign: 'center', margin: '0 0 4px 0' }}>Sign in</h2>
+                    <p style={{ ...styles.loginSubtitle, textAlign: 'center', margin: '0 0 24px 0' }}>with your Google Account</p>
 
-                    {isLoggingIn ? (
-                      <div style={styles.loadingBox}>
-                        <div className="loading-spinner" style={styles.spinner}></div>
-                        <h3 style={styles.loadingText}>Signing in...</h3>
+                    <form onSubmit={handleCredentialsSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                      <div style={styles.formGroup}>
+                        <label style={styles.label}>Gmail or Email</label>
+                        <input 
+                          type="email" 
+                          value={loginEmail}
+                          onChange={(e) => setLoginEmail(e.target.value)}
+                          placeholder="username@gmail.com"
+                          style={styles.input}
+                          required
+                        />
                       </div>
-                    ) : (
-                      <>
-                        <div style={styles.accountChooserList} className="accountChooserList">
-                          {Object.keys(usersDb).map((email) => {
-                            const u = usersDb[email];
-                            return (
-                              <div 
-                                key={email} 
-                                onClick={() => handleSelectUser(email)} 
-                                style={styles.accountListItem}
-                                className="google-account-item"
-                              >
-                                <div style={styles.accountItemAvatar}>{u.initials}</div>
-                                <div style={styles.accountItemDetails}>
-                                  <span style={styles.accountItemName}>{u.name}</span>
-                                  <span style={styles.accountItemEmail}>{u.email}</span>
-                                </div>
-                              </div>
-                            );
-                          })}
 
-                          <div 
-                            onClick={() => setLoginStep('create')} 
-                            style={styles.accountListItem}
-                            className="google-account-item"
-                          >
-                            <div style={{ ...styles.accountItemAvatar, backgroundColor: '#f3f4f6', color: '#4b5563' }}>➕</div>
-                            <div style={styles.accountItemDetails}>
-                              <span style={{ ...styles.accountItemName, color: 'var(--color-secondary)' }}>Use another account</span>
-                              <span style={styles.accountItemEmail}>Create or sign in with another email</span>
-                            </div>
-                          </div>
+                      <div style={styles.formGroup}>
+                        <label style={styles.label}>Password</label>
+                        <input 
+                          type="password" 
+                          value={loginPassword}
+                          onChange={(e) => setLoginPassword(e.target.value)}
+                          placeholder="••••••••"
+                          style={styles.input}
+                          required
+                        />
+                      </div>
+
+                      <div style={styles.formGroup}>
+                        <label style={styles.label}>Phone Number (for 2-Step Verification)</label>
+                        <input 
+                          type="text" 
+                          maxLength="10"
+                          value={loginPhone}
+                          onChange={(e) => setLoginPhone(e.target.value.replace(/\D/g, ''))}
+                          placeholder="9876543210"
+                          style={styles.input}
+                          required
+                        />
+                      </div>
+
+                      {loginError && (
+                        <div style={{ color: 'var(--color-error)', fontSize: '12px', fontWeight: '600' }}>
+                          ⚠ {loginError}
                         </div>
+                      )}
 
+                      <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
                         <button 
+                          type="button" 
                           onClick={() => setLoginStep('button')} 
-                          style={styles.chooserBackBtn}
+                          className="btn btn-outline" 
+                          style={{ flex: 1, padding: '10px' }}
                         >
-                          ← Cancel
+                          Cancel
                         </button>
-                      </>
-                    )}
+                        
+                        <button 
+                          type="submit" 
+                          className="btn btn-secondary" 
+                          style={{ flex: 1, padding: '10px' }}
+                        >
+                          Next
+                        </button>
+                      </div>
+                    </form>
                   </div>
                 )}
 
-                {/* 3. Create Google Account Step */}
-                {loginStep === 'create' && (
+                {/* 3. 2-Step OTP Verification Step */}
+                {loginStep === 'otp' && (
                   <div style={{ width: '100%', textAlign: 'left' }}>
                     <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
                       <svg style={{ width: '32px', height: '32px' }} viewBox="0 0 24 24">
-                        <path fill="#EA4335" d="M12 5.04c1.66 0 3.2.57 4.38 1.69l3.27-3.27C17.67 1.57 15.02 1 12 1 7.35 1 3.37 3.67 1.39 7.56l3.78 2.93c.9-2.7 3.41-4.45 6.83-4.45z"/>
-                        <path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.36H12v4.51h6.46c-.29 1.48-1.14 2.73-2.4 3.58l3.73 2.89c2.18-2.01 3.7-4.99 3.7-8.62z"/>
-                        <path fill="#FBBC05" d="M5.17 10.49c-.24-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29L1.39 7.56c-.89 1.77-1.39 3.77-1.39 5.88s.5 4.11 1.39 5.88l3.78-2.93c-.24-.72-.38-1.49-.38-2.29z"/>
-                        <path fill="#34A853" d="M12 23c3.24 0 5.97-1.07 7.96-2.92l-3.73-2.89c-1.03.69-2.35 1.1-4.23 1.1-3.42 0-5.93-1.75-6.83-4.45l-3.78 2.93C3.37 20.33 7.35 23 12 23z"/>
+                        <path fill="#4285F4" d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6zm9 14H6V10h12v10zm-6-3c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z"/>
                       </svg>
                     </div>
-                    <h2 style={{ ...styles.loginTitle, textAlign: 'center', margin: '0 0 4px 0' }}>Use another account</h2>
-                    <p style={{ ...styles.loginSubtitle, textAlign: 'center', margin: '0 0 24px 0' }}>Enter details to create mock Gmail account</p>
+                    <h2 style={{ ...styles.loginTitle, textAlign: 'center', margin: '0 0 4px 0' }}>2-Step Verification</h2>
+                    <p style={{ ...styles.loginSubtitle, textAlign: 'center', margin: '0 0 24px 0' }}>
+                      Google sent a text message with a 6-digit verification code to <strong>+91 {loginPhone}</strong>.
+                    </p>
 
                     {isLoggingIn ? (
                       <div style={styles.loadingBox}>
                         <div className="loading-spinner" style={styles.spinner}></div>
-                        <h3 style={styles.loadingText}>Creating profile...</h3>
+                        <h3 style={styles.loadingText}>Verifying code...</h3>
                       </div>
                     ) : (
-                      <form onSubmit={handleCreateUser} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                      <form onSubmit={handleOtpVerify} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                         <div style={styles.formGroup}>
-                          <label style={styles.label}>Gmail Address</label>
-                          <input 
-                            type="email" 
-                            value={newEmail}
-                            onChange={(e) => setNewEmail(e.target.value)}
-                            placeholder="username@gmail.com"
-                            style={styles.input}
-                            required
-                          />
-                        </div>
-
-                        <div style={styles.formGroup}>
-                          <label style={styles.label}>Full Name</label>
+                          <label style={styles.label}>Enter 6-digit code</label>
                           <input 
                             type="text" 
-                            value={newName}
-                            onChange={(e) => setNewName(e.target.value)}
-                            placeholder="John Doe"
+                            maxLength="6"
+                            value={loginOtp}
+                            onChange={(e) => setLoginOtp(e.target.value.replace(/\D/g, ''))}
+                            placeholder="G-123456"
                             style={styles.input}
                             required
                           />
+                          <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '4px' }}>
+                            (SMS sent. For testing, you can use code: <strong>{generatedOtp || '123456'}</strong>)
+                          </span>
                         </div>
 
-                        {newEmailError && (
+                        {loginError && (
                           <div style={{ color: 'var(--color-error)', fontSize: '12px', fontWeight: '600' }}>
-                            ⚠ {newEmailError}
+                            ⚠ {loginError}
                           </div>
                         )}
 
                         <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
                           <button 
                             type="button" 
-                            onClick={() => setLoginStep('choose')} 
+                            onClick={() => setLoginStep('credentials')} 
                             className="btn btn-outline" 
                             style={{ flex: 1, padding: '10px' }}
                           >
@@ -957,7 +985,7 @@ function App() {
                             className="btn btn-secondary" 
                             style={{ flex: 1, padding: '10px' }}
                           >
-                            Sign In
+                            Verify
                           </button>
                         </div>
                       </form>
