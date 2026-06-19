@@ -164,7 +164,7 @@ const Header = ({
                 )}
                 <span className="swan-visible-lg" style={styles.utilityLinkText}>
                   {isLoggedIn && user ? user.name.split(' ')[0] : 'My Account'}
-                  {unreadCount > 0 && (user.role === 'admin' || user.email === 'admin@infistyle.com') && (
+                  {unreadCount > 0 && isLoggedIn && user && (user.role === 'admin' || user.email === 'admin@infistyle.com') && (
                     <span style={{
                       backgroundColor: 'var(--color-error)',
                       color: '#ffffff',
