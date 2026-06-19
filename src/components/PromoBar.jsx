@@ -12,12 +12,12 @@ const PromoBar = () => {
 
 const styles = {
   promoBar: {
-    backgroundColor: '#1d1d1d',
+    backgroundColor: '#000000',
     color: '#ffffff',
     padding: '8px 16px',
     textAlign: 'center',
     fontSize: '13px',
-    fontWeight: '400',
+    fontWeight: '500',
     letterSpacing: '0.5px',
     zIndex: 1000,
   },
@@ -25,12 +25,13 @@ const styles = {
     display: 'inline-block',
   },
   code: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    padding: '2px 6px',
+    backgroundColor: 'var(--color-accent)',
+    color: '#000000',
+    padding: '2px 8px',
     borderRadius: '4px',
     fontWeight: '700',
-    marginLeft: '4px',
-    color: '#6fd0f5',
+    marginLeft: '6px',
+    display: 'inline-block',
   }
 };
 

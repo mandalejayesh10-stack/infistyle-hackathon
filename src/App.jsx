@@ -8,6 +8,7 @@ import Customizer from './components/Customizer';
 import CartDrawer from './components/CartDrawer';
 import Checkout from './components/Checkout';
 import Footer from './components/Footer';
+import TrustBar from './components/TrustBar';
 
 // Full product catalog data from Vistaprint India homepage JSON
 const PRODUCT_CATALOG = [
@@ -641,6 +642,7 @@ function App() {
             {selectedCategoryFilter === 'all' && !searchFilter && (
               <>
                 <HeroSlider onAction={handleNavigate} />
+                <TrustBar />
                 <Categories onSelectCategory={handleNavigate} />
               </>
             )}
@@ -850,7 +852,7 @@ function App() {
                       Three great brands. One account.
                     </h2>
                     <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', lineHeight: '1.5', marginBottom: '24px' }}>
-                      Sign in to <strong>VistaPrint</strong>, <strong>VistaCreate</strong>, or <strong>99designs by Vista</strong> and we’ll sync your accounts. If you have multiple accounts, including VistaPrint, sign in with your VistaPrint account.
+                      Sign in to <strong>InfiStyle</strong>, <strong>InfiCreate</strong>, or <strong>99designs by Infi</strong> and we’ll sync your accounts. If you have multiple accounts, including InfiStyle, sign in with your InfiStyle account.
                     </p>
 
                     {/* Social Buttons Stacked */}
@@ -949,7 +951,7 @@ function App() {
                       </a>
 
                       <p style={{ fontSize: '10.5px', color: 'var(--color-text-muted)', lineHeight: '1.4', margin: '8px 0' }}>
-                        By signing in, you have read and agree to our <span style={{ textDecoration: 'underline', cursor: 'pointer' }}>Vista Account Terms</span> and <span style={{ textDecoration: 'underline', cursor: 'pointer' }}>Privacy and Cookie Policy</span>. By clicking on the 'Sign in' button, you authorize us (Cimpress India Pvt Ltd) and its representatives to contact you through Call, Email, SMS, or WhatsApp for transactional, promotional and/or commercial purposes. This consent overrides your registration under DNC/NDNC.
+                        By signing in, you have read and agree to our <span style={{ textDecoration: 'underline', cursor: 'pointer' }}>InfiStyle Account Terms</span> and <span style={{ textDecoration: 'underline', cursor: 'pointer' }}>Privacy and Cookie Policy</span>. By clicking on the 'Sign in' button, you authorize us (Cimpress India Pvt Ltd) and its representatives to contact you through Call, Email, SMS, or WhatsApp for transactional, promotional and/or commercial purposes. This consent overrides your registration under DNC/NDNC.
                       </p>
 
                       {loginError && (

@@ -80,45 +80,25 @@ const Header = ({
         <div className="container" style={styles.topNavContainer}>
           {/* Logo */}
           <div style={styles.logoContainer} onClick={() => onNavigate('home')}>
-            <svg style={styles.logoPrism} viewBox="0 0 100 60">
-              <defs>
-                <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#00c6ff" />
-                  <stop offset="100%" stopColor="#0072ff" />
-                </linearGradient>
-                <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-                  <feGaussianBlur stdDeviation="2" result="blur" />
-                  <feMerge>
-                    <feMergeNode in="blur" />
-                    <feMergeNode in="SourceGraphic" />
-                  </feMerge>
-                </filter>
-              </defs>
-              <path 
-                d="M 50,30 C 35,15 20,15 20,30 C 20,45 35,45 50,30 C 65,15 80,15 80,30 C 80,45 65,45 50,30 Z" 
-                fill="none" 
-                stroke="url(#logoGrad)" 
-                strokeWidth="7" 
-                strokeLinecap="round"
-                filter="url(#glow)"
-              />
-            </svg>
-            <span style={styles.logoText}>InfiStyle</span>
+            <span style={{ fontSize: '26px', fontWeight: '800', fontFamily: 'var(--font-primary)', letterSpacing: '-1px', display: 'flex', alignItems: 'center' }}>
+              <span style={{ color: 'var(--color-secondary)' }}>infi</span>
+              <span style={{ color: 'var(--color-primary)' }}>style</span>
+            </span>
             <span style={styles.logoCountry}>India</span>
           </div>
 
           {/* Search Form */}
           <div style={styles.searchWrapper} ref={suggestionRef}>
-            <form onSubmit={handleSearchSubmit} style={styles.searchForm}>
+            <form onSubmit={handleSearchSubmit} className="site-search-form">
               <input 
                 type="text" 
                 placeholder="Search for visiting cards, t-shirts, mugs..." 
                 value={searchQuery}
                 onChange={handleSearchChange}
                 onFocus={() => searchQuery.trim().length > 0 && setShowSuggestions(true)}
-                style={styles.searchInput}
+                className="site-search-input"
               />
-              <button type="submit" style={styles.searchBtn}>
+              <button type="submit" className="site-search-btn">
                 🔍
               </button>
             </form>

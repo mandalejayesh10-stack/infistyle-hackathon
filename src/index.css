@@ -2,20 +2,20 @@
 
 :root {
   /* Colors */
-  --color-primary: #2f3a53;      /* Deep Midnight */
-  --color-secondary: #0c72a9;    /* Vistaprint Blue */
-  --color-accent: #6fd0f5;       /* Vistaprint Sky Blue */
-  --color-accent-hover: #2ba8e0;
-  --color-cream: #f6f6ec;        /* Warm White */
+  --color-primary: #111111;      /* Midnight Black */
+  --color-secondary: #0f62fe;    /* Royal Blue */
+  --color-accent: #ffcc00;       /* Vibrant Gold Yellow */
+  --color-accent-hover: #e5b800;
+  --color-cream: #ffffff;        /* Pure White */
   --color-white: #ffffff;
-  --color-light-gray: #f3f3f3;
-  --color-border: #e6e6e6;
-  --color-text-dark: #1d1d1d;
-  --color-text-muted: #656b80;
-  --color-promo-bg: #1d1d1d;
+  --color-light-gray: #f4f6fa;   /* Clean light gray background */
+  --color-border: #e2e8f0;       /* Slate border */
+  --color-text-dark: #0c0d10;    /* Crisp dark text */
+  --color-text-muted: #4b5563;   /* Slate muted text */
+  --color-promo-bg: #111111;     /* Black promo bar background */
   --color-promo-text: #ffffff;
-  --color-success: #1b956b;
-  --color-error: #e84d2f;
+  --color-success: #10b981;
+  --color-error: #ef4444;
   
   /* Fonts */
   --font-primary: 'Outfit', sans-serif;
@@ -154,14 +154,14 @@ input, select, textarea {
 }
 
 .btn-primary {
-  background-color: var(--color-accent);
-  color: var(--color-text-dark);
+  background-color: var(--color-secondary);
+  color: var(--color-white);
 }
 
 .btn-primary:hover {
-  background-color: var(--color-accent-hover);
+  background-color: #0c4ea6;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(111, 208, 245, 0.3);
+  box-shadow: 0 4px 12px rgba(15, 98, 254, 0.25);
 }
 
 .btn-secondary {
@@ -170,9 +170,9 @@ input, select, textarea {
 }
 
 .btn-secondary:hover {
-  background-color: #3b4968;
+  background-color: #222222;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(47, 58, 83, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .btn-outline {
@@ -251,6 +251,50 @@ input, select, textarea {
   .grid-4 { grid-template-columns: 1fr; }
   .grid-3 { grid-template-columns: 1fr; }
   .container { padding: 0 var(--space-md); }
+}
+
+/* Search Form styling */
+.site-search-form {
+  display: flex;
+  border: 1.5px solid var(--color-primary);
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #ffffff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.site-search-form:focus-within {
+  border-color: var(--color-secondary);
+  box-shadow: 0 0 0 3px rgba(15, 98, 254, 0.15);
+}
+
+.site-search-input {
+  flex: 1;
+  border: none;
+  padding: 12px 18px;
+  outline: none;
+  font-size: 14px;
+  background-color: #ffffff;
+  color: var(--color-text-dark);
+}
+
+.site-search-btn {
+  padding: 0 22px;
+  background-color: var(--color-primary);
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.site-search-btn:hover {
+  background-color: var(--color-secondary);
+}
+
+.dark-theme .site-search-form {
+  border-color: var(--color-border);
 }
 
 /* Nav Item hover dropdowns */

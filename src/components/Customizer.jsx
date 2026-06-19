@@ -14,7 +14,7 @@ const Customizer = ({ product, onAddToCart, onGoBack }) => {
   const [email, setEmail] = useState('jayesh@acme.com');
   const [address, setAddress] = useState('Nariman Point, Mumbai, India');
   const [fontFamily, setFontFamily] = useState('Outfit'); // 'Outfit' | 'Playfair Display' | 'Courier New' | 'Georgia'
-  const [themeColor, setThemeColor] = useState('#2f3a53'); // Midnight Blue default
+  const [themeColor, setThemeColor] = useState('#0f62fe'); // Royal Blue default
   const [layoutStyle, setLayoutStyle] = useState('modern'); // 'minimal' | 'modern' | 'split'
   const [corners, setCorners] = useState('rounded'); // 'standard' | 'rounded'
   const [paperFinish, setPaperFinish] = useState('matte'); // 'matte' | 'glossy' | 'velvet'
@@ -23,11 +23,11 @@ const Customizer = ({ product, onAddToCart, onGoBack }) => {
 
   // Predefined color presets
   const colors = [
-    { name: 'Midnight', hex: '#2f3a53' },
-    { name: 'Sky Blue', hex: '#6fd0f5' },
-    { name: 'Classic Slate', hex: '#1d1d1d' },
-    { name: 'Cream Warm', hex: '#f6f6ec' },
-    { name: 'Forest Green', hex: '#1b7a5e' },
+    { name: 'Royal Blue', hex: '#0f62fe' },
+    { name: 'Classic Black', hex: '#111111' },
+    { name: 'Vibrant Yellow', hex: '#ffcc00' },
+    { name: 'Warm Cream', hex: '#fcfaf2' },
+    { name: 'Navy Slate', hex: '#0c72a9' },
     { name: 'Pure White', hex: '#ffffff' }
   ];
 
@@ -126,7 +126,7 @@ const Customizer = ({ product, onAddToCart, onGoBack }) => {
                     ...styles.businessCard, 
                     backgroundColor: themeColor, 
                     fontFamily: fontFamily,
-                    color: themeColor === '#ffffff' || themeColor === '#f6f6ec' || themeColor === '#6fd0f5' ? '#1d1d1d' : '#ffffff',
+                    color: themeColor === '#ffffff' || themeColor === '#fcfaf2' || themeColor === '#ffcc00' ? '#111111' : '#ffffff',
                     borderRadius: corners === 'rounded' ? '18px' : '4px',
                     boxShadow: '0 10px 30px rgba(0, 0, 0, 0.15)'
                   }}
@@ -162,7 +162,7 @@ const Customizer = ({ product, onAddToCart, onGoBack }) => {
                     ) : (
                       /* Split template */
                       <div style={styles.cardSplit}>
-                        <div style={{...styles.cardLeftCol, borderRight: `1px solid ${themeColor === '#ffffff' || themeColor === '#f6f6ec' ? '#e6e6e6' : 'rgba(255, 255, 255, 0.2)'}`}}>
+                        <div style={{...styles.cardLeftCol, borderRight: `1px solid ${themeColor === '#ffffff' || themeColor === '#fcfaf2' || themeColor === '#ffcc00' ? '#e2e8f0' : 'rgba(255, 255, 255, 0.2)'}`}}>
                           <span style={styles.cardLogoBig}>⬡</span>
                           <span style={styles.cardCompanyName}>{companyName}</span>
                         </div>
@@ -209,7 +209,7 @@ const Customizer = ({ product, onAddToCart, onGoBack }) => {
                     style={{
                       ...styles.tshirtTextOverlay, 
                       fontFamily: fontFamily,
-                      color: themeColor === '#ffffff' || themeColor === '#f6f6ec' || themeColor === '#6fd0f5' ? '#1d1d1d' : '#ffffff'
+                      color: themeColor === '#ffffff' || themeColor === '#fcfaf2' || themeColor === '#ffcc00' ? '#111111' : '#ffffff'
                     }}
                   >
                     <span style={styles.tshirtLogoIcon}>⬡</span>
