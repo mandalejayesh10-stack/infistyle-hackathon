@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const Customizer = ({ product, onAddToCart, onGoBack }) => {
+const Customizer = ({ product, onAddToCart, onBuyNow, onGoBack }) => {
   // Config defaults based on product type
   const isCard = product.id.toLowerCase().includes('card');
   const isTshirt = product.id.toLowerCase().includes('polo') || product.id.toLowerCase().includes('tshirt') || product.id.toLowerCase().includes('shirt');
@@ -18,8 +18,10 @@ const Customizer = ({ product, onAddToCart, onGoBack }) => {
   const [layoutStyle, setLayoutStyle] = useState('modern'); // 'minimal' | 'modern' | 'split'
   const [corners, setCorners] = useState('rounded'); // 'standard' | 'rounded'
   const [paperFinish, setPaperFinish] = useState('matte'); // 'matte' | 'glossy' | 'velvet'
-  const [quantity, setQuantity] = useState(100);
-  const [shirtSize, setShirtSize] = useState('L'); // 'S' | 'M' | 'L' | 'XL'
+  const [quantity, setQuantity] = useState(isCard ? 100 : 1);
+  const [shirtSize, setShirtSize] = useState('L'); // 'S' | 'M' | 'L' | 'XL' | 'XXL'
+  const [frontPrint, setFrontPrint] = useState(true);
+  const [backPrint, setBackPrint] = useState(false);
 
   // Predefined color presets
   const colors = [
@@ -35,13 +37,17 @@ const Customizer = ({ product, onAddToCart, onGoBack }) => {
   const getBaseUnitPrice = () => {
     if (isCard) {
       if (quantity >= 1000) return 1.20;
-      if (quantity >= 500) return 1.50;
-      if (quantity >= 250) return 1.80;
+      if (quantity >= 500) return 1.40;
+      if (quantity >= 250) return 1.60;
       return 2.00;
     } else if (isTshirt) {
-      return 550;
+      let base = product.price || 320;
+      // Bulk discounts
+      if (quantity >= 50) return base * 0.8; // 20% off
+      if (quantity >= 10) return base * 0.9; // 10% off
+      return base;
     }
-    return 100;
+    return product.price || 100;
   };
 
   const getAddonCost = () => {
@@ -50,6 +56,10 @@ const Customizer = ({ product, onAddToCart, onGoBack }) => {
       if (corners === 'rounded') addon += 0.50;
       if (paperFinish === 'glossy') addon += 0.30;
       if (paperFinish === 'velvet') addon += 0.80;
+    } else if (isTshirt) {
+      if (shirtSize === 'XXL') addon += 50;
+      if (frontPrint) addon += 100;
+      if (backPrint) addon += 100;
     }
     return addon;
   };
@@ -57,30 +67,44 @@ const Customizer = ({ product, onAddToCart, onGoBack }) => {
   const unitPrice = getBaseUnitPrice() + getAddonCost();
   const totalPrice = Math.round(unitPrice * quantity);
 
+  const getCustomConfig = () => ({
+    companyName,
+    fullName,
+    title,
+    phone,
+    email,
+    address,
+    fontFamily,
+    themeColor,
+    layoutStyle,
+    corners,
+    paperFinish,
+    shirtSize,
+    frontPrint,
+    backPrint,
+    quantity,
+    unitPrice,
+    totalPrice,
+    viewPreview: view
+  });
+
   const handleAddToCart = () => {
-    const customConfig = {
-      companyName,
-      fullName,
-      title,
-      phone,
-      email,
-      address,
-      fontFamily,
-      themeColor,
-      layoutStyle,
-      corners,
-      paperFinish,
-      shirtSize,
-      quantity,
-      unitPrice,
-      totalPrice,
-      viewPreview: view
-    };
     onAddToCart({
       id: product.id,
       name: product.name,
       image: product.image,
-      config: customConfig,
+      config: getCustomConfig(),
+      quantity,
+      price: totalPrice
+    });
+  };
+
+  const handleBuyNow = () => {
+    onBuyNow({
+      id: product.id,
+      name: product.name,
+      image: product.image,
+      config: getCustomConfig(),
       quantity,
       price: totalPrice
     });
@@ -428,20 +452,58 @@ const Customizer = ({ product, onAddToCart, onGoBack }) => {
             )}
 
             {isTshirt && (
-              <div style={styles.formGroup}>
-                <label style={styles.label}>Select Size</label>
-                <div style={styles.btnGroup}>
-                  {['S', 'M', 'L', 'XL', 'XXL'].map(sz => (
-                    <button 
-                      key={sz} 
-                      onClick={() => setShirtSize(sz)}
-                      style={{...styles.toggleBtn, minWidth: '48px', backgroundColor: shirtSize === sz ? 'var(--color-primary)' : '#ffffff', color: shirtSize === sz ? '#ffffff' : 'var(--color-primary)'}}
-                    >
-                      {sz}
-                    </button>
-                  ))}
+              <>
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>Select Size</label>
+                  <div style={styles.btnGroup}>
+                    {['S', 'M', 'L', 'XL', 'XXL'].map(sz => (
+                      <button 
+                        key={sz} 
+                        onClick={() => setShirtSize(sz)}
+                        style={{
+                          ...styles.toggleBtn, 
+                          minWidth: '48px', 
+                          backgroundColor: shirtSize === sz ? 'var(--color-primary)' : '#ffffff', 
+                          color: shirtSize === sz ? '#ffffff' : 'var(--color-primary)',
+                          borderColor: shirtSize === sz ? 'var(--color-primary)' : 'var(--color-border)'
+                        }}
+                      >
+                        {sz === 'XXL' ? 'XXL (+₹50)' : sz}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>Print Customization Locations</label>
+                  <div style={styles.btnGroup}>
+                    <button 
+                      type="button"
+                      onClick={() => setFrontPrint(!frontPrint)}
+                      style={{
+                        ...styles.toggleBtn, 
+                        backgroundColor: frontPrint ? 'var(--color-primary)' : '#ffffff', 
+                        color: frontPrint ? '#ffffff' : 'var(--color-primary)',
+                        borderColor: frontPrint ? 'var(--color-primary)' : 'var(--color-border)'
+                      }}
+                    >
+                      Front Print {frontPrint ? '✓ (+₹100)' : '(+₹100)'}
+                    </button>
+                    <button 
+                      type="button"
+                      onClick={() => setBackPrint(!backPrint)}
+                      style={{
+                        ...styles.toggleBtn, 
+                        backgroundColor: backPrint ? 'var(--color-primary)' : '#ffffff', 
+                        color: backPrint ? '#ffffff' : 'var(--color-primary)',
+                        borderColor: backPrint ? 'var(--color-primary)' : 'var(--color-border)'
+                      }}
+                    >
+                      Back Print {backPrint ? '✓ (+₹100)' : '(+₹100)'}
+                    </button>
+                  </div>
+                </div>
+              </>
             )}
 
             {/* Quantity */}
@@ -453,27 +515,32 @@ const Customizer = ({ product, onAddToCart, onGoBack }) => {
                   onChange={(e) => setQuantity(Number(e.target.value))} 
                   style={styles.selectInput}
                 >
-                  <option value="100">100 Cards (₹{2.00 + getAddonCost()}/card)</option>
-                  <option value="250">250 Cards (₹{1.80 + getAddonCost()}/card) - Bulk Save!</option>
-                  <option value="500">500 Cards (₹{1.50 + getAddonCost()}/card) - High Save!</option>
-                  <option value="1000">1000 Cards (₹{1.20 + getAddonCost()}/card) - Super Save!</option>
+                  <option value="100">100 Cards (₹{(2.00 + getAddonCost()).toFixed(2)}/card)</option>
+                  <option value="250">250 Cards (₹{(1.60 + getAddonCost()).toFixed(2)}/card) - Save 20%!</option>
+                  <option value="500">500 Cards (₹{(1.40 + getAddonCost()).toFixed(2)}/card) - Save 30%!</option>
+                  <option value="1000">1000 Cards (₹{(1.20 + getAddonCost()).toFixed(2)}/card) - Save 40%!</option>
                 </select>
               ) : (
-                <input 
-                  type="number" 
-                  min="1" 
-                  max="100" 
-                  value={quantity} 
-                  onChange={(e) => setQuantity(Math.max(1, Number(e.target.value)))} 
-                  style={styles.textInput}
-                />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <input 
+                    type="number" 
+                    min="1" 
+                    max="100" 
+                    value={quantity} 
+                    onChange={(e) => setQuantity(Math.max(1, Number(e.target.value)))} 
+                    style={styles.textInput}
+                  />
+                  <span style={{ fontSize: '11px', color: '#666' }}>
+                    {quantity >= 50 ? '🎉 Bulk Save 20% Applied!' : quantity >= 10 ? '🎉 Volume Save 10% Applied!' : 'Order 10+ for 10% off, 50+ for 20% off!'}
+                  </span>
+                </div>
               )}
             </div>
           </div>
 
           <div style={styles.sectionDivider}></div>
 
-          {/* Price Summary & Add to Cart */}
+          {/* Price Summary & Actions */}
           <div style={styles.summaryBox}>
             <div style={styles.priceSummary}>
               <span style={styles.summaryLabel}>Total Pricing Summary:</span>
@@ -485,11 +552,20 @@ const Customizer = ({ product, onAddToCart, onGoBack }) => {
             
             <div style={styles.actions}>
               <button 
+                type="button"
                 className="btn btn-secondary" 
                 onClick={handleAddToCart}
-                style={{width: '100%', padding: '16px 24px', fontSize: '16px'}}
+                style={{ flex: 1, padding: '16px 12px', fontSize: '14px', border: '1.5px solid var(--color-border)', borderRadius: '6px', cursor: 'pointer', fontWeight: '600' }}
               >
-                Add Design to Cart 🛍️
+                Add to Cart 🛍️
+              </button>
+              <button 
+                type="button"
+                className="btn btn-primary" 
+                onClick={handleBuyNow}
+                style={{ flex: 1, padding: '16px 12px', fontSize: '14px', backgroundColor: 'var(--color-secondary)', color: '#ffffff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '700', boxShadow: '0 4px 12px rgba(15, 98, 254, 0.15)' }}
+              >
+                Buy Now ⚡
               </button>
             </div>
           </div>

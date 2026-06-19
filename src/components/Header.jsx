@@ -159,14 +159,14 @@ const Header = ({
                 </div>
                 <div className="account-dropdown-divider"></div>
                 <ul className="account-dropdown-list">
+                  {isLoggedIn && user && (user.role === 'admin' || user.email === 'admin@infistyle.com') && (
+                    <li onClick={(e) => { e.stopPropagation(); onNavigate('admin'); }} style={{ color: 'var(--color-secondary)', fontWeight: 'bold' }}>🛡️ Admin Console</li>
+                  )}
                   <li onClick={(e) => { e.stopPropagation(); onNavigate('account'); }}>Account</li>
                   <li onClick={(e) => { e.stopPropagation(); onNavigate('account'); }}>Dashboard</li>
                   <li onClick={(e) => { e.stopPropagation(); onNavigate('account'); }}>Account Profile</li>
                   <li onClick={(e) => { e.stopPropagation(); onNavigate('home'); }}>My Projects</li>
                   <li onClick={(e) => { e.stopPropagation(); onNavigate('home'); }}>My Design Services</li>
-                  <li onClick={(e) => { e.stopPropagation(); onNavigate('home'); }}>Websites & Digital</li>
-                  <li onClick={(e) => { e.stopPropagation(); onNavigate('home'); }}>Brand Kit</li>
-                  <li onClick={(e) => { e.stopPropagation(); onNavigate('home'); }}>My Uploads</li>
                   <li onClick={(e) => { e.stopPropagation(); onNavigate('favorites'); }}>My Favorites</li>
                   <li onClick={(e) => { e.stopPropagation(); onNavigate('account'); }}>Order History & Reorder</li>
                   <li onClick={(e) => { e.stopPropagation(); onNavigate('account'); }}>Subscriptions</li>

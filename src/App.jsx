@@ -9,6 +9,9 @@ import CartDrawer from './components/CartDrawer';
 import Checkout from './components/Checkout';
 import Footer from './components/Footer';
 import TrustBar from './components/TrustBar';
+import OrderDetail from './components/OrderDetail';
+import AdminPanel from './components/AdminPanel';
+import Legal from './components/Legal';
 
 // Full product catalog data from Vistaprint India homepage JSON
 const PRODUCT_CATALOG = [
@@ -841,10 +844,13 @@ function App() {
       initials: 'JS',
       level: 'VIP Corporate',
       wallet: 450,
-      orders: [
-        { id: 'IS-84291-IN', date: '2026-04-12', items: '100 Standard Visiting Cards', total: 200, status: 'Delivered ✓' },
-        { id: 'IS-91028-IN', date: '2026-05-18', items: "2 Men's Polo T-Shirts", total: 1140, status: 'Delivered ✓' }
-      ]
+      role: 'customer',
+      phone: '9876543210',
+      company_name: 'Acme Corporation',
+      gstin: '27ACME1234F1Z1',
+      shipping_address: 'Mittal Towers, 4th Floor, Room 402, Nariman Point',
+      billing_address: 'Mittal Towers, 4th Floor, Room 402, Nariman Point',
+      orders: ['IS-84291-IN', 'IS-91028-IN']
     },
     'amit.verma@gmail.com': {
       name: 'Amit Verma',
@@ -852,11 +858,65 @@ function App() {
       initials: 'AV',
       level: 'Standard Member',
       wallet: 150,
-      orders: [
-        { id: 'IS-10492-IN', date: '2026-05-02', items: 'Premium Letterheads', total: 230, status: 'Delivered ✓' }
-      ]
+      role: 'customer',
+      phone: '9123456789',
+      company_name: 'AV Solutions',
+      gstin: '',
+      shipping_address: 'Link Road, Block B, Andheri West',
+      billing_address: 'Link Road, Block B, Andheri West',
+      orders: ['IS-10492-IN']
+    },
+    'admin@infistyle.com': {
+      name: 'Super Admin Operator',
+      email: 'admin@infistyle.com',
+      initials: 'AD',
+      level: 'Super Admin Operations',
+      wallet: 99999,
+      role: 'admin',
+      phone: '9999999999',
+      company_name: 'InfiStyle Corporate',
+      gstin: '27INFIS7777E1Z5',
+      shipping_address: 'InfiStyle Hub, BKC, G-Block',
+      billing_address: 'InfiStyle Hub, BKC, G-Block',
+      orders: []
     }
   });
+
+  // Level 1 Inventory & SKU states
+  const [inventoryDb, setInventoryDb] = useState([
+    { sku: 'CARD-STD-MATTE', name: 'Standard Visiting Cards', stock: 500, size: 'Standard', color: 'White' },
+    { sku: 'TSHIRT-BLK-XL', name: "Men's Polo T-Shirts", stock: 40, size: 'XL', color: 'Classic Black' },
+    { sku: 'TSHIRT-BLK-L', name: "Men's Polo T-Shirts", stock: 8, size: 'L', color: 'Classic Black' }, // low stock
+    { sku: 'TSHIRT-WHT-M', name: "Women's Polo T-shirts", stock: 120, size: 'M', color: 'Pure White' },
+    { sku: 'MUG-WHT-ONER', name: 'Personalised White Mugs', stock: 200, size: 'OneSize', color: 'White' },
+    { sku: 'UMB-BLU-STD', name: 'Single Fold Umbrellas', stock: 65, size: 'Standard', color: 'Blue' }
+  ]);
+
+  // Support Tickets database
+  const [ticketsDb, setTicketsDb] = useState([
+    { id: 'TKT-8291', user_id: 'jayesh@acme.com', subject: 'Invoice Download Failing', message: 'I cannot download my invoice PDF from last month.', status: 'open', created_at: '2026-06-15T09:00:00Z' },
+    { id: 'TKT-9102', user_id: 'amit.verma@gmail.com', subject: 'Color variance on Letterhead', message: 'The printed letterhead colors are slightly lighter than expected.', status: 'resolved', created_at: '2026-05-20T11:00:00Z' }
+  ]);
+
+  // Saved Designs locker (Level 4 CX)
+  const [savedDesigns, setSavedDesigns] = useState([
+    {
+      id: 'DSN-0001',
+      user_id: 'jayesh@acme.com',
+      product_id: 'embroideredMensPoloTShirts',
+      design_name: 'Acme Polo Layout',
+      config: { companyName: 'Acme Corp', fullName: 'Jayesh Sharma', fontFamily: 'Outfit', corners: 'rounded', themeColor: '#0f62fe' },
+      preview_url: '/ai_model_man_polo_tshirt.png'
+    }
+  ]);
+
+  // Active Order Detail state
+  const [selectedOrderDetail, setSelectedOrderDetail] = useState(null);
+  // Admin Tab selection
+  const [adminTab, setAdminTab] = useState('overview');
+  const [profileTab, setProfileTab] = useState('orders'); // 'orders' | 'designs' | 'tickets' | 'profile'
+  const [ticketSubject, setTicketSubject] = useState('');
+  const [ticketMsg, setTicketMsg] = useState('');
 
   // Login wizard step: 'credentials' | 'otp'
   const [loginStep, setLoginStep] = useState('credentials');
@@ -1041,8 +1101,84 @@ function App() {
 
   // User Order History Mock
   const [orderHistory, setOrderHistory] = useState([
-    { id: 'IS-84291-IN', date: '2026-04-12', items: '100 Standard Visiting Cards', total: 200, status: 'Delivered ✓' },
-    { id: 'IS-91028-IN', date: '2026-05-18', items: "2 Men's Polo T-Shirts", total: 1140, status: 'Delivered ✓' }
+    {
+      id: 'IS-84291-IN',
+      user_id: 'jayesh@acme.com',
+      items: [
+        { name: 'Standard Visiting Cards', quantity: 100, price: 200, config: { companyName: 'Acme Corp', fullName: 'Jayesh Sharma', fontFamily: 'Outfit', corners: 'rounded', paperFinish: 'matte' } }
+      ],
+      subtotal: 200,
+      discount: 0,
+      tax_amount: 36,
+      payable_amount: 236,
+      payable: 236,
+      payment_method: 'card',
+      payment_status: 'paid',
+      shipping_name: 'Jayesh Sharma',
+      shipping_address: 'Mittal Towers, 4th Floor, Room 402, Nariman Point',
+      shipping_city: 'Mumbai',
+      shipping_pincode: '400021',
+      latitude: 18.9284,
+      longitude: 72.8229,
+      status: 'Delivered',
+      tracking_number: 'AWB91028301',
+      courier_partner: 'BlueDart',
+      invoice_no: 'INV-2026-0001',
+      created_at: '2026-04-12T10:00:00Z',
+      tags: ['Corporate']
+    },
+    {
+      id: 'IS-91028-IN',
+      user_id: 'jayesh@acme.com',
+      items: [
+        { name: "Men's Polo T-Shirts", quantity: 2, price: 640, image: '/ai_model_man_polo_tshirt.png', config: { shirtSize: 'XL', themeColor: '#0f62fe', frontPrint: true, backPrint: false } }
+      ],
+      subtotal: 640,
+      discount: 0,
+      tax_amount: 115,
+      payable_amount: 755,
+      payable: 755,
+      payment_method: 'card',
+      payment_status: 'paid',
+      shipping_name: 'Jayesh Sharma',
+      shipping_address: 'Mittal Towers, 4th Floor, Room 402, Nariman Point',
+      shipping_city: 'Mumbai',
+      shipping_pincode: '400021',
+      latitude: 18.9284,
+      longitude: 72.8229,
+      status: 'Printing In Progress 🖨️',
+      tracking_number: 'AWB84201833',
+      courier_partner: 'Delhivery',
+      invoice_no: 'INV-2026-0002',
+      created_at: '2026-05-18T14:30:00Z',
+      tags: ['VIP', 'Urgent']
+    },
+    {
+      id: 'IS-10492-IN',
+      user_id: 'amit.verma@gmail.com',
+      items: [
+        { name: 'Premium Letterheads', quantity: 1, price: 230, config: { companyName: 'AV Solutions', fullName: 'Amit Verma' } }
+      ],
+      subtotal: 230,
+      discount: 0,
+      tax_amount: 41,
+      payable_amount: 271,
+      payable: 271,
+      payment_method: 'cod',
+      payment_status: 'pending',
+      shipping_name: 'Amit Verma',
+      shipping_address: 'Link Road, Block B, Andheri West',
+      shipping_city: 'Mumbai',
+      shipping_pincode: '400053',
+      latitude: 19.1136,
+      longitude: 72.8697,
+      status: 'Order Received 📦',
+      tracking_number: null,
+      courier_partner: null,
+      invoice_no: 'INV-2026-0003',
+      created_at: '2026-05-02T11:15:00Z',
+      tags: ['Bulk']
+    }
   ]);
 
   // Handle wishlist toggle
@@ -1182,30 +1318,251 @@ function App() {
     window.scrollTo(0, 0);
   };
 
+  const handleBuyNow = (customizedItem) => {
+    // Add to cart
+    setCart(prev => [...prev, customizedItem]);
+    // Trigger checkout directly
+    handleCheckout(customizedItem.price, 0);
+  };
+
+  const handleUpdateOrderStatus = (orderId, newStatus) => {
+    setOrderHistory(prev => prev.map(ord => {
+      if (ord.id === orderId) {
+        let tracking = ord.tracking_number;
+        let partner = ord.courier_partner;
+        if (newStatus.includes('Shipped') && !tracking) {
+          tracking = `AWB${Math.floor(10000000 + Math.random() * 90000000)}`;
+          partner = ['Delhivery', 'BlueDart', 'BlueDart', 'DTDC'][Math.floor(Math.random() * 4)];
+        }
+        const updatedOrder = { 
+          ...ord, 
+          status: newStatus,
+          tracking_number: tracking,
+          courier_partner: partner,
+          payment_status: newStatus.includes('Delivered') || newStatus.includes('Shipped') ? 'paid' : ord.payment_status
+        };
+        if (selectedOrderDetail && selectedOrderDetail.id === orderId) {
+          setSelectedOrderDetail(updatedOrder);
+        }
+        return updatedOrder;
+      }
+      return ord;
+    }));
+  };
+
+  const handleUpdateOrderNotes = (orderId, notes) => {
+    setOrderHistory(prev => prev.map(ord => {
+      if (ord.id === orderId) {
+        const updatedOrder = { ...ord, internal_notes: notes };
+        if (selectedOrderDetail && selectedOrderDetail.id === orderId) {
+          setSelectedOrderDetail(updatedOrder);
+        }
+        return updatedOrder;
+      }
+      return ord;
+    }));
+  };
+
+  const handleUpdateOrderTags = (orderId, tags) => {
+    setOrderHistory(prev => prev.map(ord => {
+      if (ord.id === orderId) {
+        const updatedOrder = { ...ord, tags };
+        if (selectedOrderDetail && selectedOrderDetail.id === orderId) {
+          setSelectedOrderDetail(updatedOrder);
+        }
+        return updatedOrder;
+      }
+      return ord;
+    }));
+  };
+
+  const handleRaiseReplacement = (orderId, details) => {
+    setOrderHistory(prev => prev.map(ord => {
+      if (ord.id === orderId) {
+        const updatedOrder = { 
+          ...ord, 
+          status: 'Design Review 🔍', // Send back to Design Review for reprint
+          tags: [...(ord.tags || []), 'Reprint-Request']
+        };
+        if (selectedOrderDetail && selectedOrderDetail.id === orderId) {
+          setSelectedOrderDetail(updatedOrder);
+        }
+        return updatedOrder;
+      }
+      return ord;
+    }));
+  };
+
+  const handleSendNotification = (orderId, channel, msg) => {
+    console.log(`[Notification Alert Logged for ${orderId} via ${channel}]: ${msg}`);
+  };
+
+  const handleDownloadInvoice = (orderId) => {
+    const ord = orderHistory.find(o => o.id === orderId);
+    if (!ord) return;
+    
+    // Generate professional printed invoice via browser print
+    const invoiceWindow = window.open('', '_blank');
+    const cgst_sgst = Math.round((ord.tax_amount || 0) / 2);
+    const sub = ord.subtotal || ord.payable;
+    const disc = ord.discount || 0;
+    const final = ord.payable_amount || ord.payable;
+    
+    invoiceWindow.document.write(`
+      <html>
+      <head>
+        <title>Invoice ${ord.invoice_no || 'INV-TEMP'}</title>
+        <style>
+          body { font-family: 'Outfit', sans-serif; padding: 40px; color: #111; }
+          .invoice-header { display: flex; justify-content: space-between; border-bottom: 2px solid #ffcc00; padding-bottom: 20px; }
+          .title { font-size: 24px; font-weight: 800; color: #111; }
+          .meta-box { margin-top: 30px; display: flex; justify-content: space-between; }
+          .table { width: 100%; border-collapse: collapse; margin-top: 30px; }
+          .table th { border-bottom: 1.5px solid #ffcc00; text-align: left; padding: 10px 0; font-size: 13px; text-transform: uppercase; }
+          .table td { border-bottom: 1px solid #eee; padding: 12px 0; font-size: 14px; }
+          .cost-sheet { margin-top: 30px; align-self: flex-end; width: 300px; float: right; }
+          .cost-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; }
+          .cost-total { font-size: 18px; font-weight: 800; border-top: 1.5px solid #ffcc00; padding-top: 10px; margin-top: 10px; }
+        </style>
+      </head>
+      <body onload="window.print()">
+        <div class="invoice-header">
+          <div>
+            <span class="title"><span style="color:#0f62fe">infi</span>style India</span>
+            <p style="margin:5px 0 0 0; font-size:12px; color:#555;">BKC G-Block, Mumbai, Maharashtra - 400051<br/>GSTIN: 27INFIS7777E1Z5</p>
+          </div>
+          <div style="text-align:right;">
+             <h2 style="margin:0; font-size:20px;">TAX INVOICE</h2>
+             <p style="margin:5px 0 0 0; font-size:13px;">
+               Invoice No: <strong>${ord.invoice_no || 'Pending'}</strong><br/>
+               Date: ${new Date().toISOString().split('T')[0]}<br/>
+               Order ID: ${ord.id}
+             </p>
+          </div>
+        </div>
+        
+        <div class="meta-box">
+          <div>
+            <span style="font-size:11px; font-weight:700; color:#555; text-transform:uppercase;">Billing / Shipping To:</span>
+            <p style="margin:5px 0 0 0; font-size:14px; line-height:1.5;">
+              <strong>${ord.shipping_name}</strong><br/>
+              ${ord.shipping_address}<br/>
+              ${ord.shipping_city} - ${ord.shipping_pincode}
+            </p>
+          </div>
+          <div style="text-align:right;">
+            <span style="font-size:11px; font-weight:700; color:#555; text-transform:uppercase;">GST Compliance:</span>
+            <p style="margin:5px 0 0 0; font-size:14px;">
+              Client GSTIN: <strong>${ord.gst_no || 'N/A (B2C Client)'}</strong><br/>
+              State Code: 27 (Maharashtra)<br/>
+              HSN Code: ${ord.hsn_code || '4911'}
+            </p>
+          </div>
+         </div>
+
+         <table class="table">
+           <thead>
+             <tr>
+               <th>Item Description</th>
+               <th>Quantity</th>
+               <th>Unit Price</th>
+               <th>Total Amount</th>
+             </tr>
+           </thead>
+           <tbody>
+             ${ord.items.map(item => `
+               <tr>
+                 <td>
+                   <strong>${item.name}</strong>
+                   <span style="display:block; font-size:11px; color:#555;">Size: ${item.config?.shirtSize || item.size || 'N/A'}</span>
+                 </td>
+                 <td>${item.quantity}</td>
+                 <td>₹${Math.round(item.price / item.quantity)}</td>
+                 <td>₹${item.price}</td>
+               </tr>
+             `).join('')}
+           </tbody>
+         </table>
+
+         <div class="cost-sheet">
+           <div class="cost-row">
+             <span>Items Subtotal:</span>
+             <span>₹${sub}</span>
+           </div>
+           ${disc > 0 ? `
+             <div class="cost-row" style="color:green;">
+               <span>Discount:</span>
+               <span>-₹${disc}</span>
+             </div>
+           ` : ''}
+           <div class="cost-row">
+             <span>CGST (9%):</span>
+             <span>₹${cgst_sgst}</span>
+           </div>
+           <div class="cost-row">
+             <span>SGST (9%):</span>
+             <span>₹${cgst_sgst}</span>
+           </div>
+           <div class="cost-row cost-total">
+             <span>Grand Total:</span>
+             <span>₹${final}</span>
+           </div>
+         </div>
+       </body>
+       </html>
+     `);
+    invoiceWindow.document.close();
+  };
+
   const handleOrderSuccess = (receipt) => {
-    setOrderReceipt(receipt);
-    
-    // Add to order history
-    const itemSummaries = cart.map(c => `${c.quantity} ${c.name}`).join(', ');
-    const newOrder = {
+    // Construct detailed order structure
+    const newDetailedOrder = {
       id: receipt.orderId,
-      date: new Date().toISOString().split('T')[0],
-      items: itemSummaries,
-      total: receipt.payable,
-      status: 'Printing In Progress 🖨️'
+      user_id: user ? user.email : 'guest@infistyle.com',
+      items: cart.map(c => ({
+        name: c.name,
+        quantity: c.quantity,
+        price: c.price,
+        image: c.image,
+        config: c.config || {}
+      })),
+      subtotal: receipt.subtotal,
+      discount: receipt.discount,
+      tax_amount: receipt.tax_amount,
+      payable_amount: receipt.payable,
+      payable: receipt.payable,
+      payment_method: receipt.paymentMethod,
+      payment_status: receipt.paymentStatus,
+      shipping_name: receipt.shippingName,
+      shipping_address: receipt.shippingAddress,
+      shipping_city: receipt.shippingAddress.split(',')[1]?.split('-')[0]?.trim() || 'Mumbai',
+      shipping_pincode: receipt.shippingAddress.split('-')[1]?.trim() || '400001',
+      latitude: receipt.latitude || 19.0760,
+      longitude: receipt.longitude || 72.8777,
+      status: 'Order Received 📦', // Starting stage in 10-stage stepper
+      tracking_number: null,
+      courier_partner: null,
+      invoice_no: `INV-2026-000${orderHistory.length + 1}`,
+      gst_no: receipt.gstin || '',
+      created_at: new Date().toISOString(),
+      tags: receipt.payable > 1000 ? ['Bulk'] : []
     };
-    
-    setOrderHistory(prev => [newOrder, ...prev]);
+
+    setOrderReceipt(newDetailedOrder);
+    setOrderHistory(prev => [newDetailedOrder, ...prev]);
+
     if (isLoggedIn && user) {
       setUsersDb(prev => ({
         ...prev,
         [user.email]: {
           ...prev[user.email],
-          orders: [newOrder, ...(prev[user.email]?.orders || [])]
+          orders: [receipt.orderId, ...(prev[user.email]?.orders || [])]
         }
       }));
     }
+
     setCart([]); // Clear cart
+    setSelectedOrderDetail(newDetailedOrder);
     setViewWithHistory('success');
     window.scrollTo(0, 0);
   };
@@ -1321,6 +1678,7 @@ function App() {
           <Customizer 
             product={selectedProduct}
             onAddToCart={handleAddToCart}
+            onBuyNow={handleBuyNow}
             onGoBack={() => setViewWithHistory('home')}
           />
         )}
@@ -1337,92 +1695,120 @@ function App() {
           />
         )}
 
+        {/* Order Details / Confirmation Page (Central Hub) */}
+        {view === 'order-detail' && selectedOrderDetail && (
+          <OrderDetail 
+            order={selectedOrderDetail}
+            userRole={user && (user.role === 'admin' || user.email === 'admin@infistyle.com') ? 'admin' : 'customer'}
+            onUpdateStatus={handleUpdateOrderStatus}
+            onUpdateInternalNotes={handleUpdateOrderNotes}
+            onUpdateTags={handleUpdateOrderTags}
+            onDownloadInvoice={handleDownloadInvoice}
+            onGoBack={() => {
+              if (user && (user.role === 'admin' || user.email === 'admin@infistyle.com')) {
+                setViewWithHistory('admin');
+              } else {
+                setViewWithHistory('account');
+              }
+            }}
+            onRaiseReplacement={handleRaiseReplacement}
+            onSendNotification={handleSendNotification}
+          />
+        )}
+
+        {/* CEO Operations Dashboard Panel */}
+        {view === 'admin' && (
+          <AdminPanel 
+            orders={orderHistory}
+            inventory={inventoryDb}
+            tickets={ticketsDb}
+            onSelectOrder={(ord) => {
+              setSelectedOrderDetail(ord);
+              setViewWithHistory('order-detail');
+            }}
+            onUpdateInventory={(sku, amt) => {
+              setInventoryDb(prev => prev.map(inv => inv.sku === sku ? { ...inv, stock: Math.max(0, inv.stock + amt) } : inv));
+            }}
+            onResolveTicket={(ticketId) => {
+              setTicketsDb(prev => prev.map(tkt => tkt.id === ticketId ? { ...tkt, status: 'resolved' } : tkt));
+            }}
+            activeTab={adminTab}
+            setActiveTab={setAdminTab}
+          />
+        )}
+
+        {/* Legal Policies Tab Center */}
+        {view === 'legal' && (
+          <Legal onGoBack={() => setViewWithHistory('home')} />
+        )}
+
         {/* Order Success Summary screen */}
         {view === 'success' && orderReceipt && (
           <div className="container animate-fade-in" style={styles.successScreen}>
             <div style={styles.successCard}>
               <span style={styles.successIcon}>🎉</span>
-              <h1 style={styles.successTitle}>Order Placed Successfully!</h1>
+              <h1 style={styles.successTitle}>Order Confirmed!</h1>
               <p style={styles.successMessage}>
-                Thank you for your order, <strong>{orderReceipt.shippingName}</strong>. InfiStyle has received your design and started the high-quality printing process!
+                Thank you for your order, <strong>{orderReceipt.shippingName}</strong>. Your custom vector canvases are locked for printing!
               </p>
               
               <div style={styles.receiptBox}>
                 <div style={styles.receiptRow}>
-                  <span>Order Receipt ID:</span>
-                  <strong>{orderReceipt.orderId}</strong>
+                  <span>Order ID:</span>
+                  <strong>{orderReceipt.id}</strong>
                 </div>
                 <div style={styles.receiptRow}>
-                  <span>Total Payable:</span>
-                  <strong>₹{orderReceipt.payable}</strong>
+                  <span>Billing Name:</span>
+                  <strong>{orderReceipt.shippingName}</strong>
                 </div>
                 <div style={styles.receiptRow}>
-                  <span>Items:</span>
-                  <strong>{orderReceipt.itemsCount} Customized Templates</strong>
+                  <span>Subtotal Amount:</span>
+                  <strong>₹{orderReceipt.subtotal}</strong>
                 </div>
                 <div style={styles.receiptRow}>
-                  <span>Delivery Destination:</span>
-                  <span style={{textAlign: 'right', maxWidth: '60%'}}>{orderReceipt.shippingAddress}</span>
+                  <span>Consolidated GST (18%):</span>
+                  <strong>₹{orderReceipt.tax_amount}</strong>
+                </div>
+                <div style={styles.receiptRow}>
+                  <span>Grand Total Paid:</span>
+                  <strong>₹{orderReceipt.payable_amount}</strong>
+                </div>
+                <div style={styles.receiptRow}>
+                  <span>Payment Gateway ID:</span>
+                  <strong style={{fontFamily: 'monospace'}}>{orderReceipt.payment_method === 'cod' ? 'COD' : orderReceipt.paymentId}</strong>
+                </div>
+                <div style={styles.receiptRow}>
+                  <span>Fulfillment Status:</span>
+                  <strong style={{color: '#b06000'}}>{orderReceipt.status}</strong>
                 </div>
               </div>
 
-              {/* Interactive Printing Tracker Simulator */}
-              <div style={styles.trackerContainer}>
-                <h3 style={styles.trackerTitle}>Live Printing Queue Status</h3>
-                <div style={styles.trackerSteps}>
-                  {[
-                    { label: 'Received', icon: '📥', step: 1 },
-                    { label: 'Proofed', icon: '🔍', step: 2 },
-                    { label: 'Printing', icon: '🖨️', step: 3 },
-                    { label: 'QC Audit', icon: '✨', step: 4 },
-                    { label: 'Shipped', icon: '🚚', step: 5 }
-                  ].map((s) => {
-                    const isActive = printingStep >= s.step;
-                    const isCurrent = printingStep === s.step;
-                    return (
-                      <div key={s.step} style={styles.trackerStep}>
-                        <div 
-                          style={{
-                            ...styles.trackerIconWrapper,
-                            backgroundColor: isActive ? 'var(--color-secondary)' : '#e4e5e9',
-                            color: isActive ? '#ffffff' : 'var(--color-text-muted)',
-                            boxShadow: isCurrent ? '0 0 12px rgba(12, 114, 169, 0.4)' : 'none',
-                            transform: isCurrent ? 'scale(1.15)' : 'scale(1)'
-                          }}
-                          className={isCurrent ? 'animate-pulse' : ''}
-                        >
-                          {s.icon}
-                        </div>
-                        <span 
-                          style={{
-                            ...styles.trackerLabel,
-                            fontWeight: isCurrent ? '700' : '400',
-                            color: isActive ? 'var(--color-text-dark)' : 'var(--color-text-muted)'
-                          }}
-                        >
-                          {s.label}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-                {/* Progress status note */}
-                <p style={styles.statusNote}>
-                  {printingStep === 1 && '📥 Your custom layout is locked and saved.'}
-                  {printingStep === 2 && '🔍 Pre-flight files checked and approved by proofers.'}
-                  {printingStep === 3 && '🖨️ Designing layers on modern digital inkjet press...'}
-                  {printingStep === 4 && '✨ Scanning print density and checking edge cuts...'}
-                  {printingStep === 5 && '🚚 Package handed over to courier service. Shipped!'}
-                </p>
+              {/* Alert Confirmations */}
+              <div style={{...styles.guaranteeBox, border: '1.5px dashed var(--color-border)', backgroundColor: '#fffdf5', display: 'flex', flexDirection: 'column', gap: '6px', textAlign: 'left', marginTop: '20px', padding: '16px'}}>
+                <span style={{fontWeight: '700', fontSize: '12px', textTransform: 'uppercase', color: '#555'}}>✓ Instant Confirmations Dispatched:</span>
+                <span style={{fontSize: '11px', color: '#444'}}>💬 WhatsApp alert sent to +91 {orderReceipt.phone}</span>
+                <span style={{fontSize: '11px', color: '#444'}}>✉️ Email confirmation copy sent to {orderReceipt.email}</span>
               </div>
 
-              <p style={styles.satisfactionFooter}>
-                🛡️ Backed by Cimpress 100% Satisfaction Guarantee. 
-              </p>
-
-              <button className="btn btn-secondary" onClick={() => setViewWithHistory('home')} style={{marginTop: '20px'}}>
-                Return to Shop Home Page
-              </button>
+              <div style={{display: 'flex', gap: '12px', marginTop: '30px', justifyContent: 'center'}}>
+                <button 
+                  className="btn btn-secondary" 
+                  onClick={() => {
+                    setSelectedOrderDetail(orderReceipt);
+                    setViewWithHistory('order-detail');
+                  }}
+                  style={{padding: '12px 24px', cursor: 'pointer', fontWeight: 'bold'}}
+                >
+                  Track Order Timeline 🚚
+                </button>
+                <button 
+                  className="btn btn-outline" 
+                  onClick={() => setViewWithHistory('home')}
+                  style={{padding: '12px 24px', cursor: 'pointer'}}
+                >
+                  Return to Store 🛍️
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -1689,7 +2075,12 @@ function App() {
             </div>
           ) : (
             <div className="container animate-fade-in" style={{padding: '40px 0'}}>
-              <h1 style={styles.pageHeaderTitle}>Account Dashboard 👤</h1>
+              <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '12px'}}>
+                <h1 style={{...styles.pageHeaderTitle, margin: 0}}>Account Dashboard 👤</h1>
+                <span onClick={() => setViewWithHistory('legal')} style={{color: 'var(--color-secondary)', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px', textDecoration: 'underline'}}>
+                  📄 View Legal Policies
+                </span>
+              </div>
               <div style={styles.sectionDivider}></div>
               
               <div style={styles.accountLayout}>
@@ -1707,6 +2098,35 @@ function App() {
                     <span>InfiStyle Wallet:</span>
                     <strong style={{color: 'var(--color-success)'}}>₹{user?.wallet ?? 450}</strong>
                   </div>
+                  
+                  {/* Dashboard Sidebar Nav Links */}
+                  <div style={{display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '20px', width: '100%'}}>
+                    <button 
+                      onClick={() => setProfileTab('orders')}
+                      style={{...styles.sidebarTabBtn, fontWeight: profileTab === 'orders' ? '700' : '400', backgroundColor: profileTab === 'orders' ? '#f0f9ff' : 'transparent', color: profileTab === 'orders' ? 'var(--color-secondary)' : '#444'}}
+                    >
+                      📦 My Orders & Tracking
+                    </button>
+                    <button 
+                      onClick={() => setProfileTab('designs')}
+                      style={{...styles.sidebarTabBtn, fontWeight: profileTab === 'designs' ? '700' : '400', backgroundColor: profileTab === 'designs' ? '#f0f9ff' : 'transparent', color: profileTab === 'designs' ? 'var(--color-secondary)' : '#444'}}
+                    >
+                      🎨 My Saved Designs
+                    </button>
+                    <button 
+                      onClick={() => setProfileTab('tickets')}
+                      style={{...styles.sidebarTabBtn, fontWeight: profileTab === 'tickets' ? '700' : '400', backgroundColor: profileTab === 'tickets' ? '#f0f9ff' : 'transparent', color: profileTab === 'tickets' ? 'var(--color-secondary)' : '#444'}}
+                    >
+                      🎫 Help Tickets
+                    </button>
+                    <button 
+                      onClick={() => setProfileTab('profile')}
+                      style={{...styles.sidebarTabBtn, fontWeight: profileTab === 'profile' ? '700' : '400', backgroundColor: profileTab === 'profile' ? '#f0f9ff' : 'transparent', color: profileTab === 'profile' ? 'var(--color-secondary)' : '#444'}}
+                    >
+                      ✏️ Edit Account Profile
+                    </button>
+                  </div>
+
                   <button 
                     onClick={handleLogout} 
                     className="btn btn-outline" 
@@ -1716,29 +2136,224 @@ function App() {
                   </button>
                 </div>
 
-                {/* Order history list */}
-                <div style={styles.historyCard}>
-                  <h3 style={styles.historyTitle}>Your Order History</h3>
-                  <div style={styles.historyList}>
-                    {orderHistory.map(ord => (
-                      <div key={ord.id} style={styles.historyItem}>
-                        <div style={styles.historyDetails}>
-                          <strong>Order {ord.id}</strong>
-                          <span style={styles.historyDate}>Date: {ord.date}</span>
-                          <span style={styles.historyDesc}>{ord.items}</span>
-                        </div>
-                        <div style={styles.historySum}>
-                          <strong>₹{ord.total}</strong>
-                          <span style={{
-                            ...styles.historyStatus, 
-                            color: ord.status.includes('Delivered') ? 'var(--color-success)' : '#d4620b'
-                          }}>
-                            {ord.status}
-                          </span>
-                        </div>
+                {/* Right Side: Tab Panel Content */}
+                <div style={{flex: 2, minWidth: '320px'}}>
+                  {/* TAB 1: ORDER HISTORY */}
+                  {profileTab === 'orders' && (
+                    <div style={styles.historyCard}>
+                      <h3 style={styles.historyTitle}>Your Order History</h3>
+                      <div style={styles.historyList}>
+                        {orderHistory
+                          .filter(ord => ord.user_id === user.email)
+                          .map(ord => (
+                            <div 
+                              key={ord.id} 
+                              onClick={() => {
+                                setSelectedOrderDetail(ord);
+                                setViewWithHistory('order-detail');
+                              }}
+                              style={{...styles.historyItem, cursor: 'pointer', transition: 'all 0.2s'}}
+                            >
+                              <div style={styles.historyDetails}>
+                                <strong>Order #{ord.id}</strong>
+                                <span style={styles.historyDate}>Placed: {ord.created_at ? ord.created_at.split('T')[0] : ord.date}</span>
+                                <span style={styles.historyDesc}>
+                                  {ord.items.map(i => `${i.quantity}x ${i.name} (Size: ${i.config?.shirtSize || i.size || 'N/A'})`).join(', ')}
+                                </span>
+                              </div>
+                              <div style={{...styles.historySum, alignItems: 'flex-end'}}>
+                                <strong>₹{ord.payable_amount || ord.payable || ord.total}</strong>
+                                <span style={{
+                                  ...styles.historyStatus, 
+                                  color: ord.status.includes('Delivered') ? 'var(--color-success)' : '#d4620b'
+                                }}>
+                                  {ord.status}
+                                </span>
+                                <div style={{display: 'flex', gap: '8px', marginTop: '10px'}}>
+                                  <button 
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleBuyNow(ord.items[0]);
+                                    }}
+                                    style={styles.reorderBtn}
+                                  >
+                                    Order Again 🔁
+                                  </button>
+                                  <button style={styles.trackBtn}>Track Timeline</button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  )}
+
+                  {/* TAB 2: MY DESIGNS */}
+                  {profileTab === 'designs' && (
+                    <div style={styles.historyCard}>
+                      <h3 style={styles.historyTitle}>My Saved Vector Canvas Designs</h3>
+                      <div style={styles.historyList}>
+                        {savedDesigns
+                          .filter(d => d.user_id === user.email)
+                          .map(d => (
+                            <div key={d.id} style={styles.historyItem}>
+                              <div style={{display: 'flex', gap: '16px', alignItems: 'center'}}>
+                                <div style={styles.designIconPlaceholder}>🎨</div>
+                                <div>
+                                  <strong>{d.design_name}</strong>
+                                  <span style={styles.historyDate}>Template Category: {PRODUCT_CATALOG.find(p => p.id === d.product_id)?.name || 'Custom'}</span>
+                                </div>
+                              </div>
+                              <button 
+                                onClick={() => {
+                                  const prod = PRODUCT_CATALOG.find(p => p.id === d.product_id);
+                                  setSelectedProduct(prod);
+                                  setViewWithHistory('customizer');
+                                }}
+                                style={styles.reorderBtn}
+                              >
+                                Open in Customizer ➔
+                              </button>
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* TAB 3: SUPPORT TICKETS */}
+                  {profileTab === 'tickets' && (
+                    <div style={styles.historyCard}>
+                      <h3 style={styles.historyTitle}>Raise Support Ticket</h3>
+                      <form onSubmit={(e) => {
+                        e.preventDefault();
+                        if (!ticketSubject.trim() || !ticketMsg.trim()) return;
+                        const newTkt = {
+                          id: `TKT-${Math.floor(1000 + Math.random() * 9000)}`,
+                          user_id: user.email,
+                          subject: ticketSubject,
+                          message: ticketMsg,
+                          status: 'open',
+                          created_at: new Date().toISOString()
+                        };
+                        setTicketsDb(prev => [newTkt, ...prev]);
+                        setTicketSubject('');
+                        setTicketMsg('');
+                        alert('Support ticket created successfully! Admin will reply via email/whatsapp.');
+                      }} style={{display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '30px'}}>
+                        <input 
+                          type="text" 
+                          placeholder="Ticket Subject (e.g., Courier Delayed)"
+                          value={ticketSubject}
+                          onChange={(e) => setTicketSubject(e.target.value)}
+                          style={styles.profileInput}
+                          required
+                        />
+                        <textarea 
+                          placeholder="Explain your query in detail..."
+                          value={ticketMsg}
+                          onChange={(e) => setTicketMsg(e.target.value)}
+                          style={{...styles.profileInput, minHeight: '100px', resize: 'vertical'}}
+                          required
+                        />
+                        <button type="submit" style={{...styles.reorderBtn, alignSelf: 'flex-start', padding: '10px 20px'}}>Create Ticket 🎫</button>
+                      </form>
+
+                      <div style={styles.sectionDivider}></div>
+                      
+                      <h4 style={styles.historyTitle}>Your Past Tickets</h4>
+                      <div style={styles.historyList}>
+                        {ticketsDb
+                          .filter(t => t.user_id === user.email)
+                          .map(t => (
+                            <div key={t.id} style={styles.historyItem}>
+                              <div>
+                                <strong>[{t.id}] {t.subject}</strong>
+                                <span style={styles.historyDate}>Message: {t.message}</span>
+                              </div>
+                              <span style={{
+                                ...styles.historyStatus,
+                                color: t.status === 'open' ? 'var(--color-error)' : 'var(--color-success)',
+                                fontWeight: 'bold'
+                              }}>
+                                {t.status.toUpperCase()}
+                              </span>
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* TAB 4: PROFILE SETTINGS */}
+                  {profileTab === 'profile' && (
+                    <div style={styles.historyCard}>
+                      <h3 style={styles.historyTitle}>Configure Customer & Billing Profile</h3>
+                      <form onSubmit={(e) => {
+                        e.preventDefault();
+                        // Save to usersDb & user state
+                        setUsersDb(prev => ({
+                          ...prev,
+                          [user.email]: { ...prev[user.email], ...user }
+                        }));
+                        alert('Corporate billing & shipping addresses updated successfully!');
+                      }} style={{display: 'flex', flexDirection: 'column', gap: '16px'}}>
+                        <div style={styles.formGroup}>
+                          <label style={styles.label}>Corporate Company Name</label>
+                          <input 
+                            type="text" 
+                            value={user.company_name || ''}
+                            onChange={(e) => setUser({ ...user, company_name: e.target.value })}
+                            style={styles.profileInput}
+                            placeholder="Acme Corp"
+                          />
+                        </div>
+                        
+                        <div style={styles.formGroup}>
+                          <label style={styles.label}>Corporate GSTIN (For 18% GST Input Credit)</label>
+                          <input 
+                            type="text" 
+                            maxLength="15"
+                            value={user.gstin || ''}
+                            onChange={(e) => setUser({ ...user, gstin: e.target.value.toUpperCase() })}
+                            style={styles.profileInput}
+                            placeholder="27ACME1234F1Z1"
+                          />
+                        </div>
+
+                        <div style={styles.formGroup}>
+                          <label style={styles.label}>Registered Phone Number</label>
+                          <input 
+                            type="text" 
+                            value={user.phone || ''}
+                            onChange={(e) => setUser({ ...user, phone: e.target.value })}
+                            style={styles.profileInput}
+                            placeholder="9876543210"
+                          />
+                        </div>
+
+                        <div style={styles.formGroup}>
+                          <label style={styles.label}>Billing Address Coordinates</label>
+                          <textarea 
+                            value={user.billing_address || ''}
+                            onChange={(e) => setUser({ ...user, billing_address: e.target.value })}
+                            style={{...styles.profileInput, minHeight: '60px'}}
+                            placeholder="Full corporate billing coordinates..."
+                          />
+                        </div>
+
+                        <div style={styles.formGroup}>
+                          <label style={styles.label}>Shipping Address Coordinates</label>
+                          <textarea 
+                            value={user.shipping_address || ''}
+                            onChange={(e) => setUser({ ...user, shipping_address: e.target.value })}
+                            style={{...styles.profileInput, minHeight: '60px'}}
+                            placeholder="Default physical shipping location coordinates..."
+                          />
+                        </div>
+
+                        <button type="submit" style={{...styles.reorderBtn, alignSelf: 'flex-start', padding: '12px 24px'}}>Save Settings</button>
+                      </form>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -1763,6 +2378,106 @@ function App() {
 }
 
 const styles = {
+  guaranteeBox: {
+    width: '100%',
+    borderRadius: 'var(--radius-md)',
+  },
+  formGroup: {
+    display: 'flex',
+    flexDirection: 'column',
+    width: '100%',
+    marginBottom: '16px',
+    textAlign: 'left',
+  },
+  loadingBox: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '40px 20px',
+    width: '100%',
+  },
+  spinner: {
+    width: '40px',
+    height: '40px',
+    border: '3px solid #f3f3f3',
+    borderTop: '3px solid var(--color-secondary)',
+    borderRadius: '50%',
+  },
+  loadingText: {
+    fontSize: '15px',
+    fontWeight: '600',
+    color: 'var(--color-text-dark)',
+    marginTop: '16px',
+  },
+  label: {
+    display: 'block',
+    fontSize: '13px',
+    fontWeight: '600',
+    color: 'var(--color-text-dark)',
+    marginBottom: '6px',
+  },
+  sidebarTabBtn: {
+    display: 'block',
+    width: '100%',
+    padding: '12px 16px',
+    textAlign: 'left',
+    borderRadius: 'var(--radius-md)',
+    fontSize: '14px',
+    border: 'none',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+  },
+  reorderBtn: {
+    backgroundColor: 'var(--color-primary)',
+    color: '#ffffff',
+    border: 'none',
+    borderRadius: 'var(--radius-full)',
+    padding: '8px 16px',
+    fontSize: '13px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'var(--transition-fast)',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '6px',
+    boxShadow: 'var(--shadow-sm)',
+  },
+  trackBtn: {
+    backgroundColor: 'transparent',
+    color: 'var(--color-secondary)',
+    border: '1.5px solid var(--color-secondary)',
+    borderRadius: 'var(--radius-full)',
+    padding: '8px 16px',
+    fontSize: '13px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'var(--transition-fast)',
+  },
+  designIconPlaceholder: {
+    width: '48px',
+    height: '48px',
+    borderRadius: 'var(--radius-md)',
+    backgroundColor: '#fffbeb',
+    border: '1px solid var(--color-border)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '24px',
+  },
+  profileInput: {
+    width: '100%',
+    padding: '10px 14px',
+    borderRadius: 'var(--radius-md)',
+    border: '1.5px solid var(--color-border)',
+    fontSize: '14px',
+    backgroundColor: '#ffffff',
+    color: 'var(--color-text-dark)',
+    outline: 'none',
+    boxSizing: 'border-box',
+    transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
+  },
   filterHeader: {
     padding: '30px 0 10px',
     display: 'flex',
