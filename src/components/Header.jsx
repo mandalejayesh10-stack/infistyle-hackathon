@@ -146,7 +146,7 @@ const Header = ({
                 {isLoggedIn && user ? (
                   <div style={{...styles.headerAvatar, position: 'relative'}}>
                     {user.initials}
-                    {unreadCount > 0 && (user.role === 'admin' || user.email === 'admin@infistyle.com') && (
+                    {unreadCount > 0 && (user.role === 'admin' || user.role === 'manager' || user.role === 'support' || user.email === 'admin@infistyle.com') && (
                       <span style={{
                         position: 'absolute',
                         top: '-2px',
@@ -164,7 +164,7 @@ const Header = ({
                 )}
                 <span className="swan-visible-lg" style={styles.utilityLinkText}>
                   {isLoggedIn && user ? user.name.split(' ')[0] : 'My Account'}
-                  {unreadCount > 0 && isLoggedIn && user && (user.role === 'admin' || user.email === 'admin@infistyle.com') && (
+                  {unreadCount > 0 && isLoggedIn && user && (user.role === 'admin' || user.role === 'manager' || user.role === 'support' || user.email === 'admin@infistyle.com') && (
                     <span style={{
                       backgroundColor: 'var(--color-error)',
                       color: '#ffffff',
@@ -189,7 +189,7 @@ const Header = ({
                 </div>
                 <div className="account-dropdown-divider"></div>
                 <ul className="account-dropdown-list">
-                  {isLoggedIn && user && (user.role === 'admin' || user.email === 'admin@infistyle.com') && (
+                  {isLoggedIn && user && (user.role === 'admin' || user.role === 'manager' || user.role === 'support' || user.email === 'admin@infistyle.com') && (
                     <li onClick={(e) => { e.stopPropagation(); onNavigate('admin'); }} style={{ color: 'var(--color-secondary)', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <span>🛡️ Admin Console</span>
                       {unreadCount > 0 && (

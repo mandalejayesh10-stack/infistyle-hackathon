@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../supabaseClient';
 
 const AdminPanel = ({ 
   orders, 
@@ -22,6 +23,71 @@ const AdminPanel = ({
   const [notiFilter, setNotiFilter] = useState('All');
   const [activeNotiSubTab, setActiveNotiSubTab] = useState('feed'); // 'feed' | 'dispatched' | 'websocket'
   const [selectedAlertEmail, setSelectedAlertEmail] = useState(null);
+
+  const [profiles, setProfiles] = useState([]);
+
+  const fetchProfiles = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*');
+      if (error) throw error;
+      if (data) {
+        setProfiles(data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch user profiles:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchProfiles();
+  }, []);
+
+  const handleUpdateUserRole = async (userId, userEmail, newRole) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .update({ role: newRole })
+        .eq('id', userId)
+        .select()
+        .single();
+      if (error) throw error;
+      
+      setProfiles(prev => prev.map(p => p.id === userId ? { ...p, role: newRole } : p));
+      alert(`Successfully updated role for ${userEmail} to ${newRole.toUpperCase()}!`);
+    } catch (err) {
+      alert(`Failed to update role: ${err.message}`);
+    }
+  };
+
+  const handleToggleUserStatus = async (userId, userEmail, currentDisabledStatus) => {
+    try {
+      const targetStatus = !currentDisabledStatus;
+      const { data, error } = await supabase
+        .from('profiles')
+        .update({ is_disabled: targetStatus })
+        .eq('id', userId)
+        .select()
+        .single();
+      if (error) throw error;
+
+      setProfiles(prev => prev.map(p => p.id === userId ? { ...p, is_disabled: targetStatus } : p));
+      alert(`Successfully ${targetStatus ? 'disabled' : 'enabled'} account for ${userEmail}!`);
+    } catch (err) {
+      alert(`Failed to update status: ${err.message}`);
+    }
+  };
+
+  const getNewRegistrationsCount = () => {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    return profiles.filter(p => new Date(p.created_at) >= startOfMonth).length;
+  };
+
+  const getActiveSessionsCount = () => {
+    return Math.max(2, profiles.filter(p => p.role && p.role !== 'customer').length + 1);
+  };
 
   // Calculations for CEO Dashboard Metrics
   const getTodayOrdersCount = () => {
@@ -97,6 +163,7 @@ const AdminPanel = ({
           { id: 'inventory', label: 'Inventory Stock 📦' },
           { id: 'finance', label: 'Finance & GST 💰' },
           { id: 'tickets', label: 'Customer Tickets 🎫' },
+          { id: 'customers', label: 'Customer Accounts 👤' },
           { id: 'notifications', label: `Notifications 🔔${getUnreadNotificationsCount() > 0 ? ` (${getUnreadNotificationsCount()})` : ''}` }
         ].map(tab => (
           <button 
@@ -164,6 +231,32 @@ const AdminPanel = ({
                 <span style={styles.statLabel}>Refund Rates</span>
                 <strong style={{...styles.statValue, color: '#c5221f'}}>1.2%</strong>
                 <span style={styles.statSub}>₹{getRefundedAmount()} issued refunds</span>
+              </div>
+            </div>
+
+            {/* Stat Cards Row 3 (Customer Accounts & Sessions) */}
+            <div style={styles.statsRow}>
+              <div style={{...styles.statCard, borderTop: '4px solid var(--color-primary)'}}>
+                <span style={styles.statLabel}>Total Customers</span>
+                <strong style={styles.statValue}>{profiles.length}</strong>
+                <span style={styles.statSub}>Registered corporate buyers</span>
+              </div>
+              <div style={{...styles.statCard, borderTop: '4px solid #1a73e8'}}>
+                <span style={styles.statLabel}>New Registrations (This Month)</span>
+                <strong style={{...styles.statValue, color: '#1a73e8'}}>{getNewRegistrationsCount()}</strong>
+                <span style={styles.statSub}>Growth in customer base</span>
+              </div>
+              <div style={{...styles.statCard, borderTop: '4px solid #137333'}}>
+                <span style={styles.statLabel}>Active Operational Sessions</span>
+                <strong style={{...styles.statValue, color: '#137333'}}>{getActiveSessionsCount()}</strong>
+                <span style={styles.statSub}>Operators and buyers online</span>
+              </div>
+              <div style={{...styles.statCard, borderTop: '4px solid var(--color-secondary)'}}>
+                <span style={styles.statLabel}>Avg Order Value</span>
+                <strong style={{...styles.statValue, color: 'var(--color-secondary)'}}>
+                  ₹{orders.length ? Math.round(orders.reduce((acc, o) => acc + (o.payable_amount || o.payable), 0) / orders.length) : 0}
+                </strong>
+                <span style={styles.statSub}>Ticket size per order</span>
               </div>
             </div>
 
@@ -864,6 +957,138 @@ const AdminPanel = ({
                     </div>
                   )}
                 </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Tab 7: Customer Accounts */}
+        {activeTab === 'customers' && (
+          <div>
+            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '2px solid var(--color-border)', paddingBottom: '8px'}}>
+              <h3 style={{...styles.subTitle, margin: 0}}>👤 Customer Roster & Role Matrix</h3>
+              <span style={{fontSize: '12px', color: 'var(--color-text-muted)', fontWeight: 'bold'}}>
+                Total Registered: {profiles.length}
+              </span>
+            </div>
+
+            {/* Roster Search */}
+            <div style={{...styles.filterRow, marginBottom: '20px'}}>
+              <input 
+                type="text" 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search by name, email, phone or company..."
+                style={styles.searchInput}
+              />
+            </div>
+            
+            {profiles.length === 0 ? (
+              <p style={{color: '#666'}}>No customer records found.</p>
+            ) : (
+              <div style={{overflowX: 'auto'}}>
+                <table style={styles.table}>
+                  <thead>
+                    <tr style={styles.tableRowHead}>
+                      <th style={{padding: '10px', textAlign: 'left'}}>Name</th>
+                      <th style={{padding: '10px', textAlign: 'left'}}>Email</th>
+                      <th style={{padding: '10px', textAlign: 'left'}}>Phone</th>
+                      <th style={{padding: '10px', textAlign: 'left'}}>Company Name</th>
+                      <th style={{padding: '10px', textAlign: 'left'}}>GSTIN</th>
+                      <th style={{padding: '10px', textAlign: 'left'}}>Status</th>
+                      <th style={{padding: '10px', textAlign: 'left'}}>Current Role</th>
+                      <th style={{padding: '10px', textAlign: 'left'}}>Action (Assign Role)</th>
+                      <th style={{padding: '10px', textAlign: 'left'}}>Toggle Access</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {profiles
+                      .filter(prof => {
+                        const query = searchQuery.toLowerCase();
+                        return (
+                          (prof.name || '').toLowerCase().includes(query) ||
+                          (prof.email || '').toLowerCase().includes(query) ||
+                          (prof.company_name || '').toLowerCase().includes(query) ||
+                          (prof.phone || '').toLowerCase().includes(query)
+                        );
+                      })
+                      .map(prof => (
+                        <tr key={prof.id} style={styles.tableRow}>
+                          <td style={{padding: '10px', fontWeight: 'bold'}}>{prof.name}</td>
+                          <td style={{padding: '10px'}}>{prof.email}</td>
+                          <td style={{padding: '10px'}}>{prof.phone || '—'}</td>
+                          <td style={{padding: '10px'}}>{prof.company_name || '—'}</td>
+                          <td style={{padding: '10px'}}><code>{prof.gstin || '—'}</code></td>
+                          <td style={{padding: '10px'}}>
+                            <span style={{
+                              padding: '4px 8px',
+                              borderRadius: '12px',
+                              fontSize: '11px',
+                              fontWeight: 'bold',
+                              backgroundColor: prof.is_disabled ? '#fce8e6' : '#e6f4ea',
+                              color: prof.is_disabled ? '#c5221f' : '#137333'
+                            }}>
+                              {prof.is_disabled ? 'DISABLED' : 'ACTIVE'}
+                            </span>
+                          </td>
+                          <td style={{padding: '10px'}}>
+                            <span style={{
+                              padding: '4px 8px',
+                              borderRadius: '4px',
+                              fontSize: '11px',
+                              fontWeight: 'bold',
+                              backgroundColor: prof.role === 'admin' ? '#fce8e6' :
+                                               prof.role === 'manager' ? '#e8f0fe' :
+                                               prof.role === 'support' ? '#e6f4ea' : '#f1f3f4',
+                              color: prof.role === 'admin' ? '#c5221f' :
+                                     prof.role === 'manager' ? '#1a73e8' :
+                                     prof.role === 'support' ? '#137333' : '#3c4043'
+                            }}>
+                              {prof.role ? prof.role.toUpperCase() : 'CUSTOMER'}
+                            </span>
+                          </td>
+                          <td style={{padding: '10px'}}>
+                            <select 
+                              value={prof.role || 'customer'}
+                              onChange={(e) => handleUpdateUserRole(prof.id, prof.email, e.target.value)}
+                              style={{
+                                padding: '6px 10px',
+                                borderRadius: '4px',
+                                border: '1.5px solid var(--color-border)',
+                                backgroundColor: '#ffffff',
+                                fontWeight: '600',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              <option value="customer">Customer</option>
+                              <option value="support">Support</option>
+                              <option value="manager">Manager</option>
+                              <option value="admin">Admin</option>
+                              <option value="designer">Designer</option>
+                            </select>
+                          </td>
+                          <td style={{padding: '10px'}}>
+                            <button
+                              onClick={() => handleToggleUserStatus(prof.id, prof.email, prof.is_disabled)}
+                              style={{
+                                padding: '6px 12px',
+                                borderRadius: '4px',
+                                fontSize: '11px',
+                                fontWeight: 'bold',
+                                border: '1px solid ' + (prof.is_disabled ? '#137333' : '#c5221f'),
+                                backgroundColor: '#ffffff',
+                                color: prof.is_disabled ? '#137333' : '#c5221f',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s'
+                              }}
+                            >
+                              {prof.is_disabled ? 'Enable' : 'Disable'}
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
               </div>
             )}
           </div>

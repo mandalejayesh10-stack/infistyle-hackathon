@@ -819,6 +819,79 @@ const CATEGORIES = [
     ]
   }
 ];
+const MinimizedHeader = ({ onNavigate }) => {
+  return (
+    <header style={{
+      borderBottom: '1px solid #e4e5e9',
+      backgroundColor: '#ffffff',
+      padding: '16px 0',
+      textAlign: 'center'
+    }}>
+      <div className="container" style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        maxWidth: '1000px',
+        margin: '0 auto',
+        padding: '0 20px'
+      }}>
+        {/* Logo */}
+        <div style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }} onClick={() => onNavigate('home')}>
+          <span style={{ fontSize: '26px', fontWeight: '800', fontFamily: 'var(--font-primary)', letterSpacing: '-1px', display: 'flex', alignItems: 'center' }}>
+            <span style={{ color: 'var(--color-secondary)' }}>infi</span>
+            <span style={{ color: 'var(--color-primary)' }}>style</span>
+          </span>
+          <span style={{
+            fontSize: '11px',
+            backgroundColor: '#ffcc00',
+            color: 'var(--color-primary)',
+            padding: '2px 6px',
+            borderRadius: '4px',
+            fontWeight: 'bold',
+            marginTop: '4px'
+          }}>India</span>
+        </div>
+        
+        {/* Help Link */}
+        <div style={{ fontSize: '13px', color: '#666' }}>
+          Need help? <span style={{ textDecoration: 'underline', cursor: 'pointer', color: 'var(--color-secondary)', fontWeight: '600' }} onClick={() => alert('Support line: 1800-123-4567')}>Contact Support</span>
+        </div>
+      </div>
+    </header>
+  );
+};
+
+const MinimizedFooter = () => {
+  return (
+    <footer style={{
+      borderTop: '1px solid #e4e5e9',
+      backgroundColor: '#ffffff',
+      padding: '24px 0',
+      textAlign: 'center',
+      marginTop: 'auto',
+      fontSize: '12px',
+      color: '#666666'
+    }}>
+      <div className="container" style={{
+        maxWidth: '1000px',
+        margin: '0 auto',
+        padding: '0 20px',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: '12px'
+      }}>
+        <span>© 2026 InfiStyle. All rights reserved.</span>
+        <div style={{ display: 'flex', gap: '20px' }}>
+          <span style={{ cursor: 'pointer', textDecoration: 'underline' }}>Privacy and Cookie Policy</span>
+          <span style={{ cursor: 'pointer', textDecoration: 'underline' }}>Terms and Conditions</span>
+          <span style={{ cursor: 'pointer', textDecoration: 'underline' }}>Intellectual Property Policy</span>
+        </div>
+      </div>
+    </footer>
+  );
+};
 
 function App() {
   const [view, setView] = useState('home'); // 'home' | 'customizer' | 'checkout' | 'success' | 'favorites' | 'account'
@@ -917,6 +990,32 @@ function App() {
   const [profileTab, setProfileTab] = useState('orders'); // 'orders' | 'designs' | 'tickets' | 'profile'
   const [ticketSubject, setTicketSubject] = useState('');
   const [ticketMsg, setTicketMsg] = useState('');
+
+  // 1. Session Restoration & Auth Change Listener (Supabase Auth Gateway)
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session && session.user) {
+        setIsLoggedIn(true);
+        setUser(session.user);
+      }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session && session.user) {
+        setIsLoggedIn(true);
+        setUser(session.user);
+      } else {
+        setIsLoggedIn(false);
+        setUser(null);
+      }
+    });
+
+    return () => {
+      if (subscription && typeof subscription.unsubscribe === 'function') {
+        subscription.unsubscribe();
+      }
+    };
+  }, []);
 
   // Notifications State & Real-time Live Log (Supabase Realtime / WebSockets)
   const [notificationsDb, setNotificationsDb] = useState([
@@ -1191,143 +1290,173 @@ function App() {
     setRealtimeLog(prev => [wsLog, ...prev]);
   };
 
-  // Login wizard step: 'credentials' | 'otp'
-  const [loginStep, setLoginStep] = useState('credentials');
+  // Login wizard mode: 'login' | 'signup' | 'forgot_password' | 'reset_password'
+  const [loginMode, setLoginMode] = useState('login');
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
-  const [loginPhone, setLoginPhone] = useState('9876543210');
-  const [loginOtp, setLoginOtp] = useState('');
+  const [loginConfirmPassword, setLoginConfirmPassword] = useState('');
+  const [loginName, setLoginName] = useState('');
   const [loginError, setLoginError] = useState('');
-  const [generatedOtp, setGeneratedOtp] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loginNotification, setLoginNotification] = useState('');
 
-  const handleSocialLogin = (provider) => {
-    let email = 'jayesh@acme.com';
-    let phone = '9876543210';
-    if (provider === 'Facebook') {
-      email = 'amit.verma@gmail.com';
-      phone = '9123456789';
+  const handleSocialLogin = async (provider) => {
+    if (provider !== 'Google') {
+      setLoginError('Only Google login is supported.');
+      return;
     }
-    if (provider === 'Apple') {
-      email = 'apple-user@gmail.com';
-      phone = '9345678901';
-    }
-    
-    setLoginEmail(email);
-    setLoginPassword('socialpassword123');
-    setLoginPhone(phone);
-    
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    setGeneratedOtp(otp);
     setLoginError('');
-    setLoginStep('otp');
-    console.log(`[${provider} Auth OTP Code]: ${otp}`);
-    setLoginNotification(`[${provider} Verification Code sent to +91 ${phone}]: Use code ${otp} to verify.`);
-  };
-
-  const handleCredentialsSubmit = (e) => {
-    e.preventDefault();
-    if (!loginEmail.trim() || !loginEmail.includes('@')) {
-      setLoginError('Please enter a valid Gmail / Email address');
-      return;
-    }
-    if (!loginPassword.trim() || loginPassword.length < 6) {
-      setLoginError('Password must be at least 6 characters long');
-      return;
-    }
-    
-    // Simulate sending OTP code to user's registered phone
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    setGeneratedOtp(otp);
-    setLoginError('');
-    setLoginStep('otp');
-    console.log(`[Email Auth OTP Code]: ${otp}`);
-    setLoginNotification(`[Verification Code sent to +91 ${loginPhone}]: Use code ${otp} to verify.`);
-  };
-
-  const handleCreateAccountTrigger = (e) => {
-    e.preventDefault();
-    if (!loginEmail.trim() || !loginEmail.includes('@')) {
-      setLoginError('Please enter a valid Gmail / Email address to create an account');
-      return;
-    }
-    if (!loginPassword.trim() || loginPassword.length < 6) {
-      setLoginError('Password must be at least 6 characters long');
-      return;
-    }
-
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    setGeneratedOtp(otp);
-    setLoginError('');
-    setLoginStep('otp');
-    console.log(`[Registration OTP Code]: ${otp}`);
-    setLoginNotification(`[Account Registration Code sent to +91 ${loginPhone}]: Use code ${otp} to verify.`);
-  };
-
-  const handleOtpVerify = (e) => {
-    e.preventDefault();
-    if (loginOtp !== generatedOtp && loginOtp !== '123456') { // Allow 123456 as bypass code
-      setLoginError('Incorrect 6-digit verification code. Please check your SMS.');
-      return;
-    }
-
     setIsLoggingIn(true);
-    setLoginError('');
-    
-    setTimeout(() => {
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({ provider: 'google' });
       setIsLoggingIn(false);
-      
-      const emailKey = loginEmail.toLowerCase().trim();
-      let loggedUser = usersDb[emailKey];
-      
-      if (!loggedUser) {
-        // Create new dynamic profile on first login!
-        const usernamePart = emailKey.split('@')[0];
-        const formattedName = usernamePart.split(/[\._\-]/).map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-        const initials = formattedName.split(' ').map(w => w[0]).join('').toUpperCase().substring(0, 2);
+      if (error) throw error;
+    } catch (err) {
+      setIsLoggingIn(false);
+      setLoginError(err.message || 'An error occurred during Google sign-in.');
+    }
+  };
 
-        loggedUser = {
-          name: formattedName,
-          email: emailKey,
-          initials: initials || 'US',
-          level: 'SaaS Client',
-          wallet: 100, // Signup bonus
-          orders: []
-        };
-
-        // Add to db
-        setUsersDb(prev => ({
-          ...prev,
-          [emailKey]: loggedUser
-        }));
-      }
-
-      setIsLoggedIn(true);
-      setUser(loggedUser);
-      setOrderHistory(loggedUser.orders || []);
+  const handleCredentialsSubmit = async (e) => {
+    e.preventDefault();
+    if (!loginEmail.trim() || !loginEmail.includes('@')) {
+      setLoginError('Please enter a valid email address');
+      return;
+    }
+    if (!loginPassword.trim() || loginPassword.length < 6) {
+      setLoginError('Password must be at least 6 characters long');
+      return;
+    }
+    
+    setLoginError('');
+    setLoginNotification('');
+    setIsLoggingIn(true);
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: loginEmail.trim(),
+        password: loginPassword
+      });
+      setIsLoggingIn(false);
+      if (error) throw error;
       
-      // Reset wizard fields
-      setLoginStep('credentials');
       setLoginEmail('');
       setLoginPassword('');
-      setLoginOtp('');
       setLoginError('');
-      setLoginNotification('');
-      
       if (redirectAfterLogin) {
         setViewWithHistory(redirectAfterLogin);
         setRedirectAfterLogin(null);
       } else {
         setViewWithHistory('account');
       }
-    }, 1200);
+    } catch (err) {
+      setIsLoggingIn(false);
+      setLoginError(err.message || 'Invalid login credentials');
+    }
   };
 
-  const handleLogout = () => {
+  const handleCreateAccountTrigger = async (e) => {
+    e.preventDefault();
+    if (!loginEmail.trim() || !loginEmail.includes('@')) {
+      setLoginError('Please enter a valid email address');
+      return;
+    }
+    if (!loginPassword.trim() || loginPassword.length < 6) {
+      setLoginError('Password must be at least 6 characters long');
+      return;
+    }
+    if (loginPassword !== loginConfirmPassword) {
+      setLoginError('Passwords do not match');
+      return;
+    }
+    if (!loginName.trim()) {
+      setLoginError('Please enter your full name');
+      return;
+    }
+
+    setLoginError('');
+    setLoginNotification('');
+    setIsLoggingIn(true);
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: loginEmail.trim(),
+        password: loginPassword,
+        options: {
+          data: {
+            name: loginName.trim()
+          }
+        }
+      });
+      setIsLoggingIn(false);
+      if (error) throw error;
+      
+      setLoginEmail('');
+      setLoginPassword('');
+      setLoginConfirmPassword('');
+      setLoginName('');
+      if (redirectAfterLogin) {
+        setViewWithHistory(redirectAfterLogin);
+        setRedirectAfterLogin(null);
+      } else {
+        setViewWithHistory('account');
+      }
+      setLoginNotification('Registration successful! Please check your email inbox to verify your account.');
+    } catch (err) {
+      setIsLoggingIn(false);
+      setLoginError(err.message || 'Registration failed');
+    }
+  };
+
+  const handleForgotPassword = (e) => {
+    e.preventDefault();
+    if (!loginEmail.trim() || !loginEmail.includes('@')) {
+      setLoginError('Please enter a valid email address');
+      return;
+    }
+    setIsLoggingIn(true);
+    setLoginError('');
+    supabase.auth.resetPasswordForEmail(loginEmail.trim())
+      .then(({ error }) => {
+        setIsLoggingIn(false);
+        if (error) {
+          setLoginError(error.message);
+        } else {
+          setLoginNotification('Password reset link sent to your email.');
+          setLoginMode('login');
+        }
+      });
+  };
+
+  const handlePasswordResetSubmit = (e) => {
+    e.preventDefault();
+    if (!loginPassword.trim() || loginPassword.length < 6) {
+      setLoginError('Password must be at least 6 characters long');
+      return;
+    }
+    if (loginPassword !== loginConfirmPassword) {
+      setLoginError('Passwords do not match');
+      return;
+    }
+    setIsLoggingIn(true);
+    setLoginError('');
+    supabase.auth.updateUser({ password: loginPassword })
+      .then(({ error }) => {
+        setIsLoggingIn(false);
+        if (error) {
+          setLoginError(error.message);
+        } else {
+          setLoginNotification('Password updated successfully! Please sign in with your new password.');
+          setLoginMode('login');
+          setLoginPassword('');
+          setLoginConfirmPassword('');
+        }
+      });
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     setIsLoggedIn(false);
     setUser(null);
-    setLoginStep('credentials');
+    setLoginMode('login');
     setLoginNotification('');
     setViewWithHistory('home');
   };
@@ -1924,6 +2053,7 @@ function App() {
   };
 
   const filteredProducts = getFilteredProducts();
+  const isAuthPage = view === 'account' && !isLoggedIn;
 
   return (
     <div className="App">
@@ -1973,25 +2103,29 @@ function App() {
       )}
 
       {/* 1. Promotional code bar */}
-      <PromoBar />
+      {!isAuthPage && <PromoBar />}
 
       {/* 2. Dynamic Sticky Header */}
-      <Header 
-        cartCount={cart.length}
-        favCount={favorites.length}
-        onNavigate={handleNavigate}
-        onSearch={handleSearch}
-        onToggleCart={() => setIsCartOpen(true)}
-        currentTab={selectedCategoryFilter}
-        categories={CATEGORIES}
-        onSelectProduct={handleSelectProduct}
-        theme={theme}
-        onToggleTheme={handleToggleTheme}
-        isLoggedIn={isLoggedIn}
-        user={user}
-        onLogout={handleLogout}
-        unreadCount={notificationsDb.filter(n => !n.is_read).length}
-      />
+      {isAuthPage ? (
+        <MinimizedHeader onNavigate={handleNavigate} />
+      ) : (
+        <Header 
+          cartCount={cart.length}
+          favCount={favorites.length}
+          onNavigate={handleNavigate}
+          onSearch={handleSearch}
+          onToggleCart={() => setIsCartOpen(true)}
+          currentTab={selectedCategoryFilter}
+          categories={CATEGORIES}
+          onSelectProduct={handleSelectProduct}
+          theme={theme}
+          onToggleTheme={handleToggleTheme}
+          isLoggedIn={isLoggedIn}
+          user={user}
+          onLogout={handleLogout}
+          unreadCount={notificationsDb.filter(n => !n.is_read).length}
+        />
+      )}
 
       {/* 3. Main Routing Section */}
       <main style={{ minHeight: '60vh' }}>
@@ -2781,7 +2915,7 @@ function App() {
       />
 
       {/* 5. Footer */}
-      <Footer onNavigate={handleNavigate} />
+      {isAuthPage ? <MinimizedFooter /> : <Footer onNavigate={handleNavigate} />}
     </div>
   );
 }
