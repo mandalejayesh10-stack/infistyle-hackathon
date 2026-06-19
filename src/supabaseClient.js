@@ -174,12 +174,6 @@ const supabase = {
       const token = localStorage.getItem('infistyle_access_token');
       if (!token) return { data: { session: null }, error: null };
       
-      if (isMockMode) {
-        const db = getMockProfilesDb();
-        const firstUser = Object.values(db)[0];
-        return { data: { session: { access_token: token, user: firstUser } }, error: null };
-      }
-
       try {
         const res = await backendFetch('/users/me');
         if (res.ok) {
@@ -196,7 +190,6 @@ const supabase = {
     },
 
     signUp: async ({ email, password, options }) => {
-      if (isMockMode) return runMockSignUp(email, password, options);
       try {
         const res = await backendFetch('/auth/register', {
           method: 'POST',
@@ -221,7 +214,6 @@ const supabase = {
     },
 
     signInWithPassword: async ({ email, password }) => {
-      if (isMockMode) return runMockSignIn(email, password);
       try {
         const res = await backendFetch('/auth/login', {
           method: 'POST',
@@ -242,7 +234,6 @@ const supabase = {
     },
 
     signInWithOAuth: async ({ provider }) => {
-      if (isMockMode) return runMockOAuthSignIn();
       try {
         const res = await backendFetch('/auth/google-simulated', {
           method: 'POST',
@@ -263,7 +254,6 @@ const supabase = {
     },
 
     resetPasswordForEmail: async (email) => {
-      if (isMockMode) return { data: {}, error: null };
       try {
         const res = await backendFetch('/auth/forgot-password', {
           method: 'POST',
@@ -280,7 +270,6 @@ const supabase = {
     },
 
     updateUser: async ({ password }) => {
-      if (isMockMode) return { data: {}, error: null };
       try {
         // Find token from URL search params
         const params = new URLSearchParams(window.location.search);
@@ -301,12 +290,12 @@ const supabase = {
 
     signOut: async () => {
       const refreshToken = localStorage.getItem('infistyle_refresh_token');
-      if (!isMockMode) {
+      try {
         await backendFetch('/auth/logout', {
           method: 'POST',
           body: JSON.stringify({ refresh_token: refreshToken }),
-        }).catch(() => {});
-      }
+        });
+      } catch (e) {}
       localStorage.removeItem('infistyle_access_token');
       localStorage.removeItem('infistyle_refresh_token');
       notifyChange('SIGNED_OUT', null);
@@ -339,11 +328,6 @@ const supabase = {
             return {
               single: async () => {
                 if (table === 'profiles') {
-                  if (isMockMode) {
-                    const db = getMockProfilesDb();
-                    const profile = Object.values(db).find(p => p.id === val || p.email === val);
-                    return { data: profile || null, error: profile ? null : { message: 'Not found' } };
-                  }
                   try {
                     const res = await backendFetch('/users/me');
                     if (res.ok) {
@@ -353,7 +337,7 @@ const supabase = {
                   } catch (e) {
                     const db = getMockProfilesDb();
                     const profile = Object.values(db).find(p => p.id === val || p.email === val);
-                    return { data: profile || null, error: null };
+                    return { data: profile || null, error: profile ? null : { message: 'Not found' } };
                   }
                 }
                 return { data: null, error: { message: 'Not found' } };
@@ -361,12 +345,6 @@ const supabase = {
               then: async (resolve) => {
                 // Return matching profile lists
                 if (table === 'profiles') {
-                  if (isMockMode) {
-                    const db = getMockProfilesDb();
-                    const list = Object.values(db).filter(p => p[col] === val);
-                    resolve({ data: list, error: null });
-                    return;
-                  }
                   try {
                     const res = await backendFetch('/admin/users');
                     if (res.ok) {
@@ -386,11 +364,6 @@ const supabase = {
           },
           then: async (resolve) => {
             if (table === 'profiles') {
-              if (isMockMode) {
-                const db = getMockProfilesDb();
-                resolve({ data: Object.values(db), error: null });
-                return;
-              }
               try {
                 const res = await backendFetch('/admin/users');
                 if (res.ok) {
@@ -413,17 +386,6 @@ const supabase = {
             select: () => ({
               single: async () => {
                 if (table === 'profiles') {
-                  if (isMockMode) {
-                    const db = getMockProfilesDb();
-                    const key = Object.keys(db).find(k => db[k].id === val || db[k].email === val);
-                    if (key) {
-                      db[key] = { ...db[key], ...updateData };
-                      localStorage.setItem('sb_mock_profiles_db', JSON.stringify(db));
-                      return { data: db[key], error: null };
-                    }
-                    return { data: null, error: { message: 'Not found' } };
-                  }
-                  
                   try {
                     // Check if it's admin role/status update or standard profile update
                     if (updateData.role !== undefined) {

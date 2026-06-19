@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { supabase } from './supabaseClient';
 import PromoBar from './components/PromoBar';
 import Header from './components/Header';
 import HeroSlider from './components/HeroSlider';
