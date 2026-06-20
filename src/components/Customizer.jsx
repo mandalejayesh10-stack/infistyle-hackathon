@@ -1,5 +1,25 @@
 import React, { useState, useEffect, useRef } from 'react';
 
+const UNIVERSAL_UNIVERSITY_LOGO = `data:image/svg+xml;utf8,${encodeURIComponent(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 150">
+  <g transform="translate(10, 10)">
+    <rect x="0" y="0" width="40" height="40" fill="#4d7c0f" rx="2" />
+    <path d="M5,20 C15,10 25,30 35,15" fill="none" stroke="#e0f2fe" stroke-width="1.5" />
+    <rect x="44" y="0" width="40" height="40" fill="#1d4ed8" rx="2" />
+    <path d="M49,15 C59,25 69,10 79,30" fill="none" stroke="#f0fdf4" stroke-width="1.5" />
+    <rect x="0" y="44" width="40" height="40" fill="#1d4ed8" rx="2" />
+    <path d="M5,64 C15,54 25,74 35,59" fill="none" stroke="#f0fdf4" stroke-width="1.5" />
+    <rect x="44" y="44" width="40" height="40" fill="#4d7c0f" rx="2" />
+    <path d="M49,59 C59,69 69,54 79,74" fill="none" stroke="#e0f2fe" stroke-width="1.5" />
+  </g>
+  <text x="105" y="98" font-family="'Outfit', sans-serif" font-size="76" font-weight="900" fill="#1d4ed8">A</text>
+  <text x="160" y="98" font-family="'Outfit', sans-serif" font-size="76" font-weight="900" fill="#4d7c0f">I</text>
+  <text x="215" y="58" font-family="'Outfit', sans-serif" font-size="44" font-weight="bold" fill="#1d4ed8">Universal</text>
+  <text x="215" y="104" font-family="'Outfit', sans-serif" font-size="44" font-weight="bold" fill="#4d7c0f">University</text>
+  <line x1="215" y1="120" x2="480" y2="120" stroke="#cbd5e1" stroke-width="2.5" />
+</svg>
+`)}`;
+
 // Bespoke templates for different categories
 const PRODUCT_TEMPLATES = {
   'visiting-cards': [
@@ -8,6 +28,14 @@ const PRODUCT_TEMPLATES = {
       name: 'Start from Scratch',
       bg: '#ffffff',
       elements: []
+    },
+    {
+      id: 'vc-universal-univ',
+      name: 'AI Universal University',
+      bg: '#ffffff',
+      elements: [
+        { id: 'univ-logo', type: 'image', content: UNIVERSAL_UNIVERSITY_LOGO, x: 25, y: 75, width: 450, height: 135, rotation: 0, isLocked: false }
+      ]
     },
     {
       id: 'vc-navy',
@@ -170,6 +198,7 @@ const Customizer = ({ product, onAddToCart, onBuyNow, onGoBack }) => {
   const [customizerStep, setCustomizerStep] = useState('config');
 
   // Specs Config state (Step 1)
+  const [orientation, setOrientation] = useState('horizontal'); // 'horizontal' | 'vertical'
   const [corners, setCorners] = useState('standard');
   const [paperFinish, setPaperFinish] = useState('matte');
   const [deliverySpeed, setDeliverySpeed] = useState('standard');
@@ -195,8 +224,9 @@ const Customizer = ({ product, onAddToCart, onBuyNow, onGoBack }) => {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isQrScanMockOpen, setIsQrScanMockOpen] = useState(false);
   const [recentlyUploaded, setRecentlyUploaded] = useState([
-    'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=200&fit=crop', // school/education mockup representing "Universal University"
-    'https://images.unsplash.com/photo-1607799279861-4dd421887fb3?w=200&fit=crop'  // screen terminal code block mockup
+    UNIVERSAL_UNIVERSITY_LOGO,
+    'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 30" width="100" height="30" style="background:#000;"><text x="10" y="20" fill="#fff" font-size="10">Code Banner</text></svg>'),
+    'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 30" width="100" height="30" style="background:#000;"><text x="10" y="20" fill="#fff" font-size="10">Promo Stripe</text></svg>')
   ]);
 
   // AI Prompt Modal states
@@ -749,251 +779,269 @@ const Customizer = ({ product, onAddToCart, onBuyNow, onGoBack }) => {
         style={{ display: 'none' }} 
       />
 
-      {/* ------------------ STEP 1: SPEC CONFIGURATION ------------------ */}
+      {/* ------------------ STEP 1: SPEC CONFIGURATION OVERLAY (SCREEN 1) ------------------ */}
       {customizerStep === 'config' && (
-        <div style={styles.configScreen} className="animate-fade-in">
-          <button onClick={onGoBack} style={styles.backButton}>
-            ← Back to products
-          </button>
-          
-          <div style={styles.configLayout}>
-            {/* Left Col: High-Res Mockup Gallery */}
-            <div style={styles.configGalleryCol}>
-              <div style={styles.mainMockupFrame}>
-                <img 
-                  src={product.image} 
-                  alt={product.name} 
-                  style={styles.mainMockupImage} 
-                />
-                <span style={styles.badgePremium}>PREMIUM PRINT</span>
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(15, 23, 42, 0.75)',
+          zIndex: 1000,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backdropFilter: 'blur(4px)',
+          fontFamily: '"Outfit", sans-serif'
+        }}>
+          <div style={{
+            backgroundColor: '#ffffff',
+            width: '430px',
+            borderRadius: '12px',
+            padding: '30px',
+            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
+            position: 'relative',
+            maxHeight: '90vh',
+            overflowY: 'auto',
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
+            {/* Close Button */}
+            <button 
+              onClick={onGoBack} 
+              style={{
+                position: 'absolute',
+                right: '20px',
+                top: '20px',
+                background: 'none',
+                border: 'none',
+                fontSize: '24px',
+                cursor: 'pointer',
+                color: '#64748b',
+                fontWeight: '300',
+                outline: 'none'
+              }}
+            >
+              ✕
+            </button>
+
+            {/* Title & Subtitle */}
+            <h2 style={{ fontSize: '26px', fontWeight: '800', color: '#0f172a', margin: '0 0 4px' }}>
+              Standard Visiting Cards
+            </h2>
+            <p style={{ fontSize: '14px', color: '#475569', margin: '0 0 24px' }}>
+              Please select all required options.
+            </p>
+
+            {/* Product Orientation Section */}
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ fontSize: '13px', fontWeight: '700', color: '#1e293b', display: 'block', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                Product Orientation*
+              </label>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <button
+                  onClick={() => setOrientation('horizontal')}
+                  style={{
+                    padding: '14px',
+                    border: orientation === 'horizontal' ? '2px solid #0f62fe' : '1px solid #cbd5e1',
+                    borderRadius: '8px',
+                    backgroundColor: orientation === 'horizontal' ? '#eff6ff' : '#ffffff',
+                    color: '#0f172a',
+                    fontWeight: '700',
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                    outline: 'none',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  Horizontal
+                </button>
+                <button
+                  onClick={() => setOrientation('vertical')}
+                  style={{
+                    padding: '14px',
+                    border: orientation === 'vertical' ? '2px solid #0f62fe' : '1px solid #cbd5e1',
+                    borderRadius: '8px',
+                    backgroundColor: orientation === 'vertical' ? '#eff6ff' : '#ffffff',
+                    color: '#0f172a',
+                    fontWeight: '700',
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                    outline: 'none',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  Vertical
+                </button>
               </div>
-              <div style={styles.thumbnailRow}>
-                <div style={{...styles.thumbnail, borderColor: 'var(--color-border)'}}>
-                  <img src={product.image} alt="front view" style={{width:'100%', height:'100%', objectFit:'cover'}} />
+            </div>
+
+            {/* Corners Section */}
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ fontSize: '13px', fontWeight: '700', color: '#1e293b', display: 'block', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                Corners*
+              </label>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                {/* Standard Corners Card */}
+                <div
+                  onClick={() => setCorners('standard')}
+                  style={{
+                    border: corners === 'standard' ? '2px solid #0f62fe' : '1px solid #cbd5e1',
+                    borderRadius: '8px',
+                    padding: '16px',
+                    backgroundColor: corners === 'standard' ? '#eff6ff' : '#ffffff',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  {/* Standard card drawing */}
+                  <div style={{
+                    width: '110px',
+                    height: '66px',
+                    backgroundColor: '#1d4ed8',
+                    borderRadius: '2px', // sharp corners
+                    boxShadow: '0 4px 8px rgba(0,0,0,0.12)',
+                    marginBottom: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    overflow: 'hidden',
+                    position: 'relative'
+                  }}>
+                    {/* Small white line simulating logo */}
+                    <div style={{ color: '#ffffff', fontSize: '9px', fontWeight: 'bold', letterSpacing: '0.2px', opacity: 0.95, border: '1px solid rgba(255,255,255,0.4)', padding: '2px 4px' }}>InfiStyle</div>
+                  </div>
+                  <span style={{ fontSize: '14px', fontWeight: '700', color: '#0f172a' }}>Standard</span>
                 </div>
-                <div style={styles.thumbnail}>
-                  <div style={{fontSize:'11px', color:'#777', textAlign:'center', marginTop:'14px'}}>Back</div>
-                </div>
-                <div style={styles.thumbnail}>
-                  <div style={{fontSize:'11px', color:'#777', textAlign:'center', marginTop:'14px'}}>3D Card</div>
+
+                {/* Rounded Corners Card */}
+                <div
+                  onClick={() => setCorners('rounded')}
+                  style={{
+                    border: corners === 'rounded' ? '2px solid #0f62fe' : '1px solid #cbd5e1',
+                    borderRadius: '8px',
+                    padding: '16px',
+                    backgroundColor: corners === 'rounded' ? '#eff6ff' : '#ffffff',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  {/* Rounded card drawing */}
+                  <div style={{
+                    width: '110px',
+                    height: '66px',
+                    backgroundColor: '#1d4ed8',
+                    borderRadius: '10px', // rounded corners!
+                    boxShadow: '0 4px 8px rgba(0,0,0,0.12)',
+                    marginBottom: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    overflow: 'hidden',
+                    position: 'relative'
+                  }}>
+                    <div style={{ color: '#ffffff', fontSize: '9px', fontWeight: 'bold', letterSpacing: '0.2px', opacity: 0.95, border: '1px solid rgba(255,255,255,0.4)', padding: '2px 4px' }}>InfiStyle</div>
+                    {/* Highlighted corner stroke overlay */}
+                    <div style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '12px',
+                      height: '12px',
+                      borderTopLeftRadius: '10px',
+                      borderLeft: '2px solid #ffcc00',
+                      borderTop: '2px solid #ffcc00'
+                    }}></div>
+                  </div>
+                  <span style={{ fontSize: '14px', fontWeight: '700', color: '#0f172a', textAlign: 'center', lineHeight: '1.2' }}>
+                    Rounded
+                    <span style={{ display: 'block', fontSize: '11px', fontWeight: '500', color: '#64748b', marginTop: '2px' }}>+₹0.50/unit</span>
+                  </span>
                 </div>
               </div>
             </div>
 
-            {/* Right Col: Configure Attributes */}
-            <div style={styles.configFormCol}>
-              <h1 style={styles.titleText}>{product.name}</h1>
-              <div style={styles.ratingRow}>
-                <span style={{color: '#ffcc00'}}>★★★★★</span>
-                <span style={{fontSize: '13px', color: '#666', marginLeft: '6px'}}>(1,438 reviews)</span>
-              </div>
-              
-              <p style={styles.productDesc}>
-                Personalized {product.name} with a cohesive professional look. Choose standard formats or customize corner finishes, premium cardstocks, and bulk orders directly.
-              </p>
-
-              <div style={styles.specsDivider}></div>
-
-              {/* Specific Options - Corners */}
-              {isCard && (
-                <div style={styles.formSection}>
-                  <label style={styles.sectionLabel}>Corners</label>
-                  <div style={styles.optionCardsGrid}>
-                    <div 
-                      onClick={() => setCorners('standard')}
-                      style={{...styles.optionSelectCard, borderColor: corners === 'standard' ? 'var(--color-border)' : '#e2e8f0', backgroundColor: corners === 'standard' ? '#fffdf5' : '#ffffff'}}
-                    >
-                      <div style={styles.cornerStandardIcon}></div>
-                      <div style={styles.cardInfo}>
-                        <div style={styles.cardNameTitle}>Standard</div>
-                        <div style={styles.cardPriceLabel}>Included</div>
-                      </div>
-                    </div>
-                    <div 
-                      onClick={() => setCorners('rounded')}
-                      style={{...styles.optionSelectCard, borderColor: corners === 'rounded' ? 'var(--color-border)' : '#e2e8f0', backgroundColor: corners === 'rounded' ? '#fffdf5' : '#ffffff'}}
-                    >
-                      <div style={styles.cornerRoundedIcon}></div>
-                      <div style={styles.cardInfo}>
-                        <div style={styles.cardNameTitle}>Rounded</div>
-                        <div style={styles.cardPriceLabel}>+₹0.50 / unit</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Specific Options - Sizes (Clothing) */}
-              {isTshirt && (
-                <div style={styles.formSection}>
-                  <label style={styles.sectionLabel}>Size Selection</label>
-                  <div style={styles.btnGridRow}>
-                    {['S', 'M', 'L', 'XL', 'XXL'].map(sz => (
-                      <button 
-                        key={sz}
-                        onClick={() => setShirtSize(sz)}
-                        style={{
-                          ...styles.specBadgeBtn, 
-                          backgroundColor: shirtSize === sz ? '#ffcc00' : '#ffffff',
-                          borderColor: shirtSize === sz ? '#ffcc00' : '#cbd5e1',
-                          color: '#111111',
-                          fontWeight: shirtSize === sz ? '700' : '400'
-                        }}
-                      >
-                        {sz} {sz === 'XXL' && '(+₹50)'}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Specific Options - Materials */}
-              {isCard && (
-                <div style={styles.formSection}>
-                  <label style={styles.sectionLabel}>Paper Finish</label>
-                  <select 
-                    value={paperFinish}
-                    onChange={(e) => setPaperFinish(e.target.value)}
-                    style={styles.selectSpecs}
-                  >
-                    <option value="matte">Matte (Smooth & Anti-Glare)</option>
-                    <option value="glossy">Glossy (Highly Reflective +₹0.30)</option>
-                    <option value="velvet">Velvet Touch (Soft-Feel +₹0.80)</option>
-                  </select>
-                </div>
-              )}
-
-              {/* Specific Options - Ink Colors (Stamps) */}
-              {product.category === 'stamps-ink' && (
-                <div style={styles.formSection}>
-                  <label style={styles.sectionLabel}>Ink color</label>
-                  <div style={styles.btnGridRow}>
-                    {['black', 'blue', 'red'].map(col => (
-                      <button 
-                        key={col}
-                        onClick={() => setInkColor(col)}
-                        style={{
-                          ...styles.specBadgeBtn,
-                          backgroundColor: inkColor === col ? '#ffcc00' : '#ffffff',
-                          borderColor: inkColor === col ? '#ffcc00' : '#cbd5e1'
-                        }}
-                      >
-                        {col.toUpperCase()}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Specific Options - Quantity Selection */}
-              <div style={styles.formSection}>
-                <label style={styles.sectionLabel}>Select Quantity</label>
-                {isCard ? (
-                  <select 
-                    value={quantity} 
-                    onChange={(e) => setQuantity(Number(e.target.value))}
-                    style={styles.selectSpecs}
-                  >
-                    <option value="100">100 units (₹{(2.00 + getAddonCost()).toFixed(2)} / card)</option>
-                    <option value="250">250 units (₹{(1.60 + getAddonCost()).toFixed(2)} / card) - Save 20%</option>
-                    <option value="500">500 units (₹{(1.40 + getAddonCost()).toFixed(2)} / card) - Save 30%</option>
-                    <option value="1000">1000 units (₹{(1.20 + getAddonCost()).toFixed(2)} / card) - Save 40%</option>
-                  </select>
-                ) : isSticker ? (
-                  <select 
-                    value={quantity} 
-                    onChange={(e) => setQuantity(Number(e.target.value))}
-                    style={styles.selectSpecs}
-                  >
-                    <option value="24">24 units</option>
-                    <option value="50">50 units</option>
-                    <option value="100">100 units</option>
-                  </select>
-                ) : isPen ? (
-                  <select 
-                    value={quantity} 
-                    onChange={(e) => setQuantity(Number(e.target.value))}
-                    style={styles.selectSpecs}
-                  >
-                    <option value="10">10 units</option>
-                    <option value="50">50 units</option>
-                    <option value="100">100 units</option>
-                  </select>
-                ) : (
-                  <div style={styles.qtyRowInput}>
-                    <input 
-                      type="number" 
-                      min="1" 
-                      max="200" 
-                      value={quantity} 
-                      onChange={(e) => setQuantity(Math.max(1, Number(e.target.value)))}
-                      style={styles.numberInputSpec}
-                    />
-                    <span style={{fontSize: '12px', color: '#666'}}>pieces</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Main Customization CTA Triggers */}
-              <div style={styles.ctaCardButtonGroup}>
-                <button 
-                  onClick={() => setCustomizerStep('templates')}
-                  style={styles.browseDesignsBtn}
+            {/* Quantity Dropdown Selection */}
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{ fontSize: '13px', fontWeight: '700', color: '#1e293b', display: 'block', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                Quantity
+              </label>
+              <div style={{ position: 'relative' }}>
+                <select 
+                  value={quantity} 
+                  onChange={(e) => setQuantity(Number(e.target.value))}
+                  style={{
+                    width: '100%',
+                    padding: '14px 16px',
+                    border: '1.5px solid #cbd5e1',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    color: '#0f172a',
+                    outline: 'none',
+                    cursor: 'pointer',
+                    backgroundColor: '#ffffff',
+                    appearance: 'none',
+                    backgroundImage: `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>")`,
+                    backgroundRepeat: 'no-repeat',
+                    backgroundPosition: 'right 16px center',
+                    backgroundSize: '16px'
+                  }}
                 >
-                  Browse designs 🎨
-                </button>
-                <button 
-                  onClick={() => setIsUploadModalOpen(true)}
-                  style={styles.uploadDesignBtn}
-                >
-                  Upload design / Start Blank 📤
-                </button>
-              </div>
-
-              {/* Total calculations display */}
-              <div style={styles.priceStrip}>
-                <span style={{fontSize: '13px', color: '#555'}}>Estimated Total:</span>
-                <span style={{fontSize: '24px', fontWeight: '800', color: 'var(--color-primary)'}}>₹{totalPrice.toLocaleString('en-IN')}</span>
+                  <option value="100">100 (₹{(2.00 + getAddonCost()).toFixed(2)} / unit)</option>
+                  <option value="250">250 (₹{(1.60 + getAddonCost()).toFixed(2)} / unit)</option>
+                  <option value="500">500 (₹{(1.40 + getAddonCost()).toFixed(2)} / unit)</option>
+                  <option value="1000">1000 (₹{(1.20 + getAddonCost()).toFixed(2)} / unit)</option>
+                </select>
               </div>
             </div>
-          </div>
 
-          {/* Explore popular templates gallery grid (Step 1 Bottom) */}
-          <div style={styles.exploreTemplatesBlock}>
-            <h3 style={styles.exploreHeading}>Explore most popular templates</h3>
-            <div style={styles.popularTemplatesGrid}>
-              {getAvailableTemplates().slice(1, 4).map(temp => (
-                <div 
-                  key={temp.id} 
-                  onClick={() => handleSelectTemplate(temp)}
-                  style={styles.popularTemplateCard}
-                >
-                  <div style={{...styles.miniTemplatePreview, backgroundColor: temp.bg || '#ffffff'}}>
-                    {temp.elements.map(el => (
-                      <div 
-                        key={el.id}
-                        style={{
-                          position: 'absolute',
-                          left: `${(el.x / 520) * 100}%`,
-                          top: `${(el.y / 300) * 100}%`,
-                          width: `${(el.width / 520) * 100}%`,
-                          height: `${(el.height / 300) * 100}%`,
-                          fontSize: '3px',
-                          color: el.color || '#333',
-                          fontWeight: el.fontWeight || 'normal',
-                          lineHeight: '1'
-                        }}
-                      >
-                        {el.type === 'text' ? el.content.substring(0, 10) : '◼'}
-                      </div>
-                    ))}
-                  </div>
-                  <div style={styles.popularTemplateMeta}>
-                    <span style={{fontWeight: '600', fontSize: '13px'}}>{temp.name}</span>
-                    <span style={{fontSize: '11px', color: '#ffcc00'}}>★ 4.8</span>
-                  </div>
-                </div>
-              ))}
+            {/* Separator */}
+            <div style={{ height: '1px', backgroundColor: '#e2e8f0', margin: '12px 0 20px' }}></div>
+
+            {/* Footer and Proceed Next Button */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '14px', fontWeight: '600', color: '#475569' }}>
+                  {quantity} starting at
+                </span>
+                <span style={{ fontSize: '24px', fontWeight: '800', color: '#0f172a' }}>
+                  ₹{totalPrice.toLocaleString('en-IN')}.00
+                </span>
+              </div>
+              <button 
+                onClick={() => {
+                  setCustomizerStep('editor');
+                  setIsUploadModalOpen(true);
+                }}
+                style={{
+                  width: '100%',
+                  padding: '14px',
+                  backgroundColor: '#7cd1f9',
+                  color: '#0f172a',
+                  border: 'none',
+                  borderRadius: '6px',
+                  fontWeight: '700',
+                  fontSize: '15px',
+                  cursor: 'pointer',
+                  textAlign: 'center',
+                  outline: 'none',
+                  transition: 'background-color 0.2s ease'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#61d3f9'}
+                onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#7cd1f9'}
+              >
+                Next
+              </button>
             </div>
           </div>
         </div>
@@ -1123,14 +1171,17 @@ const Customizer = ({ product, onAddToCart, onBuyNow, onGoBack }) => {
       {/* ------------------ STEP 3: STUDIO EDITOR WORKSPACE ------------------ */}
       {customizerStep === 'editor' && (
         <div style={styles.editorScreen} className="animate-fade-in">
-          {/* Top Vistaprint-Style Branded White Header Bar */}
+          {/* Top InfiStyle-Branded White Header Bar */}
           <div style={styles.editorTopBar}>
             <div style={styles.editorHeaderLeft}>
-              <svg viewBox="0 0 24 24" fill="#15a1e2" style={{width: '22px', height: '22px'}}>
-                <polygon points="12 2 2 22 22 22" />
+              {/* Infinity Symbol Logo */}
+              <svg viewBox="0 0 24 24" fill="none" stroke="#0f62fe" strokeWidth="3.5" style={{ width: '24px', height: '24px', display: 'block' }}>
+                <path d="M12 12C9 7 3 7 3 12C3 17 9 17 12 12C15 7 21 7 21 12C21 17 15 17 12 12Z" />
               </svg>
-              <span style={styles.vistaprintLogoText}>
-                vistaprint<span style={{color: '#15a1e2'}}>.</span>
+              <span style={{ fontSize: '18px', fontWeight: '800', fontFamily: '"Outfit", sans-serif', letterSpacing: '-0.5px', display: 'flex', alignItems: 'center' }}>
+                <span style={{ color: '#0f62fe' }}>infi</span>
+                <span style={{ color: '#111111' }}>style</span>
+                <span style={{ color: '#ffcc00' }}>.</span>
               </span>
               <span style={styles.toolbarDivider}></span>
               <span style={styles.activeFileName}>{product.name}</span>
@@ -1142,13 +1193,51 @@ const Customizer = ({ product, onAddToCart, onBuyNow, onGoBack }) => {
                 <button onClick={handleRedo} disabled={historyIndex >= historyStack.length - 1} style={styles.historyBtn} title="Redo">↷</button>
               </div>
             </div>
-            <div style={styles.editorHeaderRight}>
-              <div style={styles.priceBanner}>₹{totalPrice}</div>
+            <div style={styles.editorHeaderRight} style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
               <button 
                 onClick={() => setCustomizerStep('orientation')}
-                style={styles.previewApproveBtn}
+                style={{
+                  backgroundColor: '#ffffff',
+                  border: '1.5px solid #cbd5e1',
+                  borderRadius: '6px',
+                  padding: '8px 16px',
+                  fontWeight: '600',
+                  fontSize: '13px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  color: '#334155'
+                }}
               >
-                Next (Preview Mockup) →
+                {/* Eye Icon */}
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+                Preview
+              </button>
+              <div style={{ fontSize: '15px', fontWeight: '700', color: '#0f172a' }}>
+                ₹{totalPrice.toFixed(2)}
+              </div>
+              <button 
+                onClick={() => setCustomizerStep('orientation')}
+                style={{
+                  backgroundColor: '#7cd1f9',
+                  color: '#0f172a',
+                  border: 'none',
+                  borderRadius: '6px',
+                  padding: '10px 24px',
+                  fontWeight: '700',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  outline: 'none',
+                  transition: 'background-color 0.15s ease'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#61d3f9'}
+                onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#7cd1f9'}
+              >
+                Next
               </button>
             </div>
           </div>
@@ -1448,27 +1537,66 @@ const Customizer = ({ product, onAddToCart, onBuyNow, onGoBack }) => {
               {/* Canvas viewport wrapper */}
               <div 
                 style={{
-                  ...styles.canvasContainerScale,
-                  transform: `scale(${editorZoom / 100})`,
-                  width: `${canvasDims.width}px`,
-                  height: `${canvasDims.height}px`
+                  position: 'relative',
+                  marginTop: '40px',
+                  marginBottom: '40px'
                 }}
               >
+                {/* Floating pill badges for Safety Area & Bleed */}
+                <div style={{ display: 'flex', gap: '8px', position: 'absolute', right: '0px', top: '-30px', zIndex: 10 }}>
+                  <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#16a34a', border: '1.5px solid #16a34a', borderRadius: '20px', padding: '2px 8px', backgroundColor: '#f0fdf4' }}>Safety Area</span>
+                  <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#2563eb', border: '1.5px solid #2563eb', borderRadius: '20px', padding: '2px 8px', backgroundColor: '#eff6ff' }}>Bleed</span>
+                </div>
+
+                {/* Left Vertical Ruler (Height indicator) */}
+                <div style={{ position: 'absolute', left: '-35px', top: '0', bottom: '0', width: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
+                  {/* Arrow Line */}
+                  <div style={{ width: '1px', backgroundColor: '#94a3b8', height: '100%', position: 'relative' }}>
+                    <div style={{ position: 'absolute', top: 0, left: '-3px', borderLeft: '4px solid transparent', borderRight: '4px solid transparent', borderBottom: '6px solid #94a3b8' }}></div>
+                    <div style={{ position: 'absolute', bottom: 0, left: '-3px', borderLeft: '4px solid transparent', borderRight: '4px solid transparent', borderTop: '6px solid #94a3b8' }}></div>
+                  </div>
+                  {/* Label text */}
+                  <span style={{ position: 'absolute', backgroundColor: '#f3f4f6', padding: '2px 4px', fontSize: '11px', color: '#64748b', transform: 'rotate(-90deg)', whiteSpace: 'nowrap', fontWeight: '600' }}>
+                    {orientation === 'vertical' ? '8.18cm' : '5.38cm'}
+                  </span>
+                </div>
+
+                {/* Bottom Horizontal Ruler (Width indicator) */}
+                <div style={{ position: 'absolute', left: '0', right: '0', bottom: '-35px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
+                  {/* Arrow Line */}
+                  <div style={{ height: '1px', backgroundColor: '#94a3b8', width: '100%', position: 'relative' }}>
+                    <div style={{ position: 'absolute', left: 0, top: '-3px', borderTop: '4px solid transparent', borderBottom: '4px solid transparent', borderRight: '6px solid #94a3b8' }}></div>
+                    <div style={{ position: 'absolute', right: 0, top: '-3px', borderTop: '4px solid transparent', borderBottom: '4px solid transparent', borderLeft: '6px solid #94a3b8' }}></div>
+                  </div>
+                  {/* Label text */}
+                  <span style={{ position: 'absolute', backgroundColor: '#f3f4f6', padding: '2px 6px', fontSize: '11px', color: '#64748b', fontWeight: '600' }}>
+                    {orientation === 'vertical' ? '5.38cm' : '8.18cm'}
+                  </span>
+                </div>
+
                 <div 
                   style={{
-                    ...styles.editorCanvas,
+                    ...styles.canvasContainerScale,
+                    transform: `scale(${editorZoom / 100})`,
                     width: `${canvasDims.width}px`,
-                    height: `${canvasDims.height}px`,
-                    backgroundColor: view === 'front' ? canvasBgColor : backBgColor
+                    height: `${canvasDims.height}px`
                   }}
-                  onClick={() => setActiveElementId(null)}
                 >
-                  <div style={styles.safetyGuideLine}></div>
-                  <div style={styles.bleedGuideLine}></div>
-                  
-                  {/* Layers */}
-                  {(view === 'front' ? canvasElements : backElements).map(el => {
-                    const isSelected = activeElementId === el.id;
+                  <div 
+                    style={{
+                      ...styles.editorCanvas,
+                      width: `${canvasDims.width}px`,
+                      height: `${canvasDims.height}px`,
+                      backgroundColor: view === 'front' ? canvasBgColor : backBgColor
+                    }}
+                    onClick={() => setActiveElementId(null)}
+                  >
+                    <div style={styles.safetyGuideLine}></div>
+                    <div style={styles.bleedGuideLine}></div>
+                    
+                    {/* Layers */}
+                    {(view === 'front' ? canvasElements : backElements).map(el => {
+                      const isSelected = activeElementId === el.id;
                     
                     return (
                       <div 
@@ -1565,6 +1693,7 @@ const Customizer = ({ product, onAddToCart, onBuyNow, onGoBack }) => {
                   })}
                 </div>
               </div>
+            </div>
 
               {/* Bottom bar control elements */}
               <div style={styles.bottomWorkspaceControls}>
@@ -1594,69 +1723,108 @@ const Customizer = ({ product, onAddToCart, onBuyNow, onGoBack }) => {
         </div>
       )}
 
-      {/* ------------------ STEP 4: 3D HAND / ORIENTATION MOCKUP ------------------ */}
+      {/* ------------------ STEP 4: 3D HAND / ORIENTATION MOCKUP (SCREEN 4) ------------------ */}
       {customizerStep === 'orientation' && (
-        <div style={styles.orientationScreen} className="animate-fade-in">
-          <div style={styles.orientationLayout}>
-            {/* Left perspective columns */}
-            <div style={styles.orientationVisualCol}>
-              <h3 style={{fontSize: '18px', fontWeight: '700', marginBottom: '24px', textAlign: 'center'}}>Premium Mockup Representation</h3>
-              
+        <div style={{ padding: '30px 0 60px', fontFamily: '"Outfit", sans-serif' }} className="animate-fade-in">
+          <div style={{ display: 'flex', gap: '48px', flexWrap: 'wrap', maxWidth: '1000px', margin: '0 auto', backgroundColor: '#ffffff', borderRadius: '12px', padding: '24px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
+            {/* Left Col: Wood Table Mockup Visuals */}
+            <div style={{ flex: '1.2', minWidth: '320px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               {isCard && (
-                <div style={styles.mockupHandFrame}>
-                  <div style={styles.cardThreeDHolder}>
-                    <div 
-                      style={{
-                        ...styles.cardThreeDBody,
-                        backgroundColor: view === 'front' ? canvasBgColor : backBgColor,
-                        borderRadius: corners === 'rounded' ? '18px' : '4px'
-                      }}
-                    >
-                      {(view === 'front' ? canvasElements : backElements).map(el => (
-                        <div 
-                          key={el.id}
-                          style={{
-                            position: 'absolute',
-                            left: `${(el.x / 520) * 100}%`,
-                            top: `${(el.y / 300) * 100}%`,
-                            width: `${(el.width / 520) * 100}%`,
-                            height: `${(el.height / 300) * 100}%`,
-                            fontSize: `${(el.fontSize / 300) * 220}px`,
-                            color: el.color || '#333',
-                            fontWeight: el.fontWeight || 'normal',
-                            fontFamily: el.fontFamily || 'Outfit',
-                            transform: `rotate(${el.rotation || 0}deg)`,
-                            lineHeight: '1',
-                            overflow: 'hidden'
-                          }}
-                        >
-                          {el.type === 'text' ? el.content : el.type === 'graphic' ? '⬡' : '◼'}
-                        </div>
-                      ))}
-                    </div>
+                <div style={{
+                  width: '100%',
+                  height: '420px',
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  position: 'relative',
+                  backgroundImage: "url('/ai_model_visiting_card.png')",
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  boxShadow: '0 10px 25px rgba(0,0,0,0.1)'
+                }}>
+                  {/* Dynamic Card Overlay tilted in hand */}
+                  <div style={{
+                    position: 'absolute',
+                    left: '106px',
+                    top: '150px',
+                    width: '286px',
+                    height: '166px',
+                    backgroundColor: view === 'front' ? canvasBgColor : backBgColor,
+                    borderRadius: corners === 'rounded' ? '12px' : '0px',
+                    transform: 'rotate(-4deg) skewX(-2deg) skewY(1deg)',
+                    boxShadow: '0 4px 10px rgba(0,0,0,0.15)',
+                    overflow: 'hidden',
+                    transition: 'all 0.3s ease'
+                  }}>
+                    {(view === 'front' ? canvasElements : backElements).map(el => (
+                      <div 
+                        key={el.id}
+                        style={{
+                          position: 'absolute',
+                          left: `${(el.x / 520) * 100}%`,
+                          top: `${(el.y / 300) * 100}%`,
+                          width: `${(el.width / 520) * 100}%`,
+                          height: `${(el.height / 300) * 100}%`,
+                          fontSize: `${(el.fontSize / 300) * 166}px`,
+                          color: el.color || '#333',
+                          fontWeight: el.fontWeight || 'bold',
+                          fontFamily: el.fontFamily || 'Outfit',
+                          transform: `rotate(${el.rotation || 0}deg)`,
+                          lineHeight: '1',
+                          overflow: 'hidden',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: el.align === 'center' ? 'center' : 'flex-start'
+                        }}
+                      >
+                        {el.type === 'text' ? el.content : el.type === 'image' ? (
+                          <img src={el.content} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                        ) : '◼'}
+                      </div>
+                    ))}
                   </div>
-                  <div style={styles.handMockupShadow}></div>
                 </div>
               )}
 
               {isTshirt && (
-                <div style={styles.clothingMockupFrame}>
-                  <svg width="340" height="340" viewBox="0 0 100 100" style={{fill: canvasBgColor, stroke: '#cbd5e1', strokeWidth:'1'}}>
-                    <path d="M50,12 L65,18 L70,30 L60,32 L58,22 L58,85 L42,85 L42,22 L40,32 L30,30 L35,18 Z" />
-                  </svg>
-                  <div style={styles.tshirtPrintContentOverlay}>
-                    {canvasElements.map(el => (
+                <div style={{
+                  width: '100%',
+                  height: '420px',
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  position: 'relative',
+                  backgroundImage: product.id.toLowerCase().includes('women') ? "url('/ai_model_polo_tshirt.png')" : "url('/ai_model_man_polo_tshirt.png')",
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  boxShadow: '0 10px 25px rgba(0,0,0,0.1)'
+                }}>
+                  {/* Chest overlay layout */}
+                  <div style={{
+                    position: 'absolute',
+                    left: '42%',
+                    top: '26%',
+                    width: '64px',
+                    height: '64px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: 'rgba(255,255,255,0.05)',
+                    transform: 'rotate(-2deg)',
+                    overflow: 'hidden'
+                  }}>
+                    {canvasElements.slice(0, 3).map(el => (
                       <div 
                         key={el.id}
                         style={{
-                          fontSize: `${(el.fontSize / 3) * 0.5}px`,
-                          color: el.color || '#fff',
+                          fontSize: '5px',
+                          color: el.color || '#111',
                           fontFamily: el.fontFamily || 'Outfit',
-                          fontWeight: el.fontWeight || 'normal',
-                          textAlign: 'center'
+                          fontWeight: 'bold',
+                          textAlign: 'center',
+                          whiteSpace: 'nowrap'
                         }}
                       >
-                        {el.type === 'text' ? el.content : '⬡'}
+                        {el.type === 'text' ? el.content.substring(0, 15) : '●'}
                       </div>
                     ))}
                   </div>
@@ -1664,113 +1832,258 @@ const Customizer = ({ product, onAddToCart, onBuyNow, onGoBack }) => {
               )}
 
               {isDrinkware && (
-                <div style={styles.mugMockupFrame}>
-                  <div style={styles.mugHandle}></div>
-                  <div style={{...styles.mugBody, backgroundColor: canvasBgColor}}>
-                    <div style={styles.mugContentOverlay}>
-                      {canvasElements.map(el => (
-                        <div 
-                          key={el.id}
-                          style={{
-                            fontSize: `${(el.fontSize / 2) * 0.5}px`,
-                            color: el.color || '#333',
-                            fontFamily: el.fontFamily || 'Outfit',
-                            fontWeight: el.fontWeight || 'normal'
-                          }}
-                        >
-                          {el.type === 'text' ? el.content : '⬡'}
-                        </div>
-                      ))}
-                    </div>
+                <div style={{
+                  width: '100%',
+                  height: '420px',
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  position: 'relative',
+                  backgroundImage: "url('/personalised_coffee_mug.png')",
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  boxShadow: '0 10px 25px rgba(0,0,0,0.1)'
+                }}>
+                  {/* Mug Overlay layout */}
+                  <div style={{
+                    position: 'absolute',
+                    left: '36%',
+                    top: '32%',
+                    width: '110px',
+                    height: '110px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transform: 'rotate(2deg) skewY(1deg)',
+                    overflow: 'hidden'
+                  }}>
+                    {canvasElements.slice(0, 3).map(el => (
+                      <div 
+                        key={el.id}
+                        style={{
+                          fontSize: '8px',
+                          color: el.color || '#111',
+                          fontFamily: el.fontFamily || 'Outfit',
+                          fontWeight: 'bold',
+                          textAlign: 'center'
+                        }}
+                      >
+                        {el.type === 'text' ? el.content.substring(0, 15) : '●'}
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
 
-              <div style={styles.mockupToggleRow}>
+              {/* Front/Back Preview Toggles under mockup */}
+              <div style={{ display: 'flex', gap: '8px', marginTop: '20px', border: '1px solid #cbd5e1', borderRadius: '6px', padding: '2px', backgroundColor: '#f1f5f9' }}>
                 <button 
                   onClick={() => setView('front')}
-                  style={{...styles.mockupToggleBtn, borderBottom: view==='front' ? '2px solid var(--color-border)' : 'none'}}
+                  style={{
+                    backgroundColor: view === 'front' ? '#ffffff' : 'transparent',
+                    border: 'none',
+                    borderRadius: '4px',
+                    padding: '8px 16px',
+                    fontWeight: '700',
+                    fontSize: '13px',
+                    cursor: 'pointer',
+                    color: view === 'front' ? '#0f62fe' : '#475569',
+                    boxShadow: view === 'front' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
+                  }}
                 >
                   Front
                 </button>
                 <button 
                   onClick={() => setView('back')}
-                  style={{...styles.mockupToggleBtn, borderBottom: view==='back' ? '2px solid var(--color-border)' : 'none'}}
+                  style={{
+                    backgroundColor: view === 'back' ? '#ffffff' : 'transparent',
+                    border: 'none',
+                    borderRadius: '4px',
+                    padding: '8px 16px',
+                    fontWeight: '700',
+                    fontSize: '13px',
+                    cursor: 'pointer',
+                    color: view === 'back' ? '#0f62fe' : '#475569',
+                    boxShadow: view === 'back' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
+                  }}
                 >
                   Back
                 </button>
               </div>
             </div>
 
-            {/* Right configuration side columns */}
-            <div style={styles.orientationFormCol}>
-              <h2 style={{fontSize: '28px', fontWeight: '800'}}>Approve & Review</h2>
-              <p style={{fontSize: '14px', color: '#555', marginTop: '8px'}}>Please check the placement of all text elements. Ensure your layout fits entirely within the safety boundaries before adding to cart.</p>
+            {/* Right Col: Change Orientation Options Panel */}
+            <div style={{ flex: '1', minWidth: '320px', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+              {/* Close button top right */}
+              <button 
+                onClick={() => setCustomizerStep('editor')}
+                style={{
+                  position: 'absolute',
+                  right: '0',
+                  top: '0',
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '22px',
+                  cursor: 'pointer',
+                  color: '#64748b',
+                  outline: 'none'
+                }}
+              >
+                ✕
+              </button>
 
-              <div style={styles.reviewSpecsTable}>
-                <div style={styles.reviewSpecsRow}>
-                  <span>Product Format</span>
-                  <span style={{fontWeight: '700'}}>{product.name}</span>
+              <h2 style={{ fontSize: '24px', fontWeight: '800', color: '#0f172a', margin: '0 0 6px', paddingRight: '30px' }}>
+                Change orientation
+              </h2>
+              <p style={{ fontSize: '14px', color: '#64748b', margin: '0 0 24px', lineHeight: '1.4' }}>
+                The design adjusts to your selected options.
+              </p>
+
+              {/* Price Details */}
+              <div style={{ marginBottom: '24px' }}>
+                <div style={{ fontSize: '24px', fontWeight: '800', color: '#0f172a' }}>
+                  ₹{totalPrice.toLocaleString('en-IN')}.00
                 </div>
-                <div style={styles.reviewSpecsRow}>
-                  <span>Paper corners</span>
-                  <span style={{fontWeight: '700'}}>{corners.toUpperCase()}</span>
-                </div>
-                <div style={styles.reviewSpecsRow}>
-                  <span>Coated Finish</span>
-                  <span style={{fontWeight: '700'}}>{paperFinish.toUpperCase()}</span>
-                </div>
-                <div style={styles.reviewSpecsRow}>
-                  <span>Quantity ordered</span>
-                  <span style={{fontWeight: '700'}}>{quantity} units</span>
-                </div>
-                <div style={styles.reviewSpecsRow}>
-                  <span>Delivery Speed</span>
-                  <span style={{fontWeight: '700'}}>{deliverySpeed === 'standard' ? 'Standard Delivery' : 'Same Day Shipping'}</span>
+                <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
+                  ₹{(totalPrice / quantity).toFixed(2)} each / {quantity} units
                 </div>
               </div>
 
-              <div style={{height: '1px', backgroundColor: '#e2e8f0', margin: '24px 0'}}></div>
+              {/* Orientation Buttons */}
+              <div style={{ marginBottom: '32px' }}>
+                <label style={{ fontSize: '13px', fontWeight: '700', color: '#1e293b', display: 'block', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  Product Orientation
+                </label>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <button
+                    onClick={() => setOrientation('horizontal')}
+                    style={{
+                      padding: '14px',
+                      border: orientation === 'horizontal' ? '2px solid #0f62fe' : '1px solid #cbd5e1',
+                      borderRadius: '8px',
+                      backgroundColor: orientation === 'horizontal' ? '#eff6ff' : '#ffffff',
+                      color: '#0f172a',
+                      fontWeight: '700',
+                      fontSize: '14px',
+                      cursor: 'pointer',
+                      outline: 'none'
+                    }}
+                  >
+                    Horizontal
+                  </button>
+                  <button
+                    onClick={() => setOrientation('vertical')}
+                    style={{
+                      padding: '14px',
+                      border: orientation === 'vertical' ? '2px solid #0f62fe' : '1px solid #cbd5e1',
+                      borderRadius: '8px',
+                      backgroundColor: orientation === 'vertical' ? '#eff6ff' : '#ffffff',
+                      color: '#0f172a',
+                      fontWeight: '700',
+                      fontSize: '14px',
+                      cursor: 'pointer',
+                      outline: 'none'
+                    }}
+                  >
+                    Vertical
+                  </button>
+                </div>
+              </div>
 
-              <div style={styles.actionsPanelOrientation}>
-                <button 
-                  onClick={() => setCustomizerStep('editor')}
-                  style={styles.backToEditorBtn}
-                >
-                  Edit Layout ✏️
-                </button>
-                <button 
-                  onClick={handleBuyNow}
-                  style={styles.orientationBuyNowBtn}
-                >
-                  Buy Now ⚡
-                </button>
+              {/* Divider */}
+              <div style={{ height: '1px', backgroundColor: '#e2e8f0', margin: 'auto 0 20px' }}></div>
+
+              {/* Actions panel */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <button 
                   onClick={handleAddToCart}
-                  style={styles.orientationCartBtn}
+                  style={{
+                    width: '100%',
+                    padding: '14px',
+                    backgroundColor: '#e2e8f0',
+                    color: '#0f172a',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontWeight: '700',
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                    textAlign: 'center',
+                    outline: 'none'
+                  }}
                 >
-                  Add to Cart 🛍️
+                  Confirm selection
+                </button>
+                
+                <button 
+                  onClick={handleBuyNow}
+                  style={{
+                    width: '100%',
+                    padding: '14px',
+                    backgroundColor: '#ffcc00',
+                    color: '#111111',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontWeight: '700',
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                    textAlign: 'center',
+                    outline: 'none'
+                  }}
+                >
+                  Buy Now ⚡
                 </button>
               </div>
             </div>
           </div>
         </div>
-      )}
+      )
+      }
 
-      {/* ------------------ VISTAPRINT MODAL OVERLAY: UPLOADS ------------------ */}
+      {/* ------------------ INFISTYLE MODAL OVERLAY: UPLOADS (SCREEN 2) ------------------ */}
       {isUploadModalOpen && (
         <div style={styles.modalOverlay} onClick={() => setIsUploadModalOpen(false)}>
-          <div style={styles.uploadModal} onClick={(e) => e.stopPropagation()}>
-            <div style={styles.modalHeader}>
-              <h3 style={styles.modalTitle}>Upload your design</h3>
-              <button onClick={() => setIsUploadModalOpen(false)} style={styles.modalCloseBtn}>✕</button>
+          <div style={{
+            backgroundColor: '#ffffff',
+            width: '800px',
+            borderRadius: '12px',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
+            fontFamily: '"Outfit", sans-serif'
+          }} onClick={(e) => e.stopPropagation()}>
+            {/* Modal Header */}
+            <div style={{
+              padding: '20px 24px',
+              borderBottom: '1px solid #cbd5e1',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <h3 style={{ fontSize: '20px', fontWeight: '800', color: '#0f172a', margin: 0 }}>
+                Upload your design
+              </h3>
+              <button 
+                onClick={() => setIsUploadModalOpen(false)} 
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '22px',
+                  cursor: 'pointer',
+                  color: '#64748b',
+                  fontWeight: '300',
+                  outline: 'none'
+                }}
+              >
+                ✕
+              </button>
             </div>
             
-            <div style={styles.modalBody}>
+            {/* Modal Body */}
+            <div style={{ display: 'flex', height: '420px' }}>
               {/* Left Column: Drag & Drop zone */}
-              <div style={styles.modalLeftColumn}>
+              <div style={{ flex: '1.2', padding: '24px', display: 'flex', flexDirection: 'column' }}>
                 <div 
-                  style={styles.modalDropzone}
                   onClick={() => fileInputRef.current?.click()}
                   onDragOver={(e) => e.preventDefault()}
                   onDrop={(e) => {
@@ -1779,35 +2092,117 @@ const Customizer = ({ product, onAddToCart, onBuyNow, onGoBack }) => {
                       processNativeFile(e.dataTransfer.files[0]);
                     }
                   }}
+                  style={{
+                    border: '1.5px solid #a1a1aa',
+                    borderRadius: '8px',
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    backgroundColor: '#f4f4f5',
+                    transition: 'all 0.2s ease',
+                    gap: '14px'
+                  }}
                 >
-                  <div style={styles.modalDropzoneContent}>
-                    <span style={{fontSize: '48px', color: '#15a1e2'}}>☁️</span>
-                    <button style={styles.deviceUploadBtn}>
-                      Upload from this device
-                    </button>
-                    <button style={styles.phoneUploadBtn} onClick={(e) => { e.stopPropagation(); setIsQrScanMockOpen(true); }}>
-                      Upload from phone
-                    </button>
-                    <div style={{fontSize: '13px', color: '#666', marginTop: '12px'}}>
-                      or drag and drop here
-                    </div>
-                  </div>
+                  {/* Upload from this device button */}
+                  <button 
+                    style={{
+                      backgroundColor: '#5bc0be',
+                      color: '#ffffff',
+                      border: 'none',
+                      padding: '12px 24px',
+                      borderRadius: '6px',
+                      fontWeight: '700',
+                      fontSize: '14px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      boxShadow: '0 4px 6px rgba(91, 192, 190, 0.2)'
+                    }}
+                  >
+                    {/* Cloud upload icon */}
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                      <polyline points="17 8 12 3 7 8" />
+                      <line x1="12" y1="3" x2="12" y2="15" />
+                    </svg>
+                    Upload from this device
+                  </button>
+
+                  {/* Upload from phone button */}
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); setIsQrScanMockOpen(true); }}
+                    style={{
+                      backgroundColor: '#ffffff',
+                      color: '#0f172a',
+                      border: '1.5px solid #cbd5e1',
+                      padding: '10px 22px',
+                      borderRadius: '6px',
+                      fontWeight: '700',
+                      fontSize: '13px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    {/* QR Code / Phone icon */}
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="3" width="7" height="7" />
+                      <rect x="14" y="3" width="7" height="7" />
+                      <rect x="14" y="14" width="7" height="7" />
+                      <rect x="3" y="14" width="7" height="7" />
+                    </svg>
+                    Upload from phone
+                  </button>
+
+                  <span style={{ fontSize: '13px', color: '#71717a', fontWeight: '500' }}>
+                    or drag and drop here
+                  </span>
                 </div>
               </div>
 
               {/* Right Column: Recently Uploaded Grid */}
-              <div style={styles.modalRightColumn}>
-                <div style={styles.specsTemplateLink}>
-                  <div style={{display:'flex', alignItems:'center', gap:'8px'}}>
-                    <span style={{fontSize:'18px'}}>📖</span>
-                    <span style={{fontWeight:'700', fontSize:'14px'}}>Specs and templates</span>
+              <div style={{ width: '320px', padding: '24px', backgroundColor: '#fafafa', borderLeft: '1px solid #e4e4e7', overflowY: 'auto' }}>
+                <div 
+                  onClick={() => {
+                    setCustomizerStep('templates');
+                    setIsUploadModalOpen(false);
+                  }}
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '14px',
+                    backgroundColor: '#ffffff',
+                    borderRadius: '8px',
+                    border: '1px solid #e4e4e7',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    marginBottom: '20px'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0f62fe" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="3" width="7" height="9" />
+                      <rect x="14" y="3" width="7" height="5" />
+                      <rect x="14" y="12" width="7" height="9" />
+                      <rect x="3" y="16" width="7" height="5" />
+                    </svg>
+                    <span style={{ fontWeight: '700', fontSize: '14px', color: '#0f172a' }}>Specs and templates</span>
                   </div>
-                  <span>❯</span>
+                  <span style={{ color: '#a1a1aa', fontWeight: '700' }}>❯</span>
                 </div>
 
-                <div style={{marginTop: '24px'}}>
-                  <h4 style={styles.recentlyUploadedHeader}>Recently uploaded</h4>
-                  <div style={styles.recentlyUploadedGrid}>
+                <div>
+                  <h4 style={{ fontSize: '12px', fontWeight: '700', color: '#71717a', textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '0.5px' }}>
+                    Recently uploaded
+                  </h4>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
                     {recentlyUploaded.map((src, idx) => (
                       <div 
                         key={idx}
@@ -1815,9 +2210,24 @@ const Customizer = ({ product, onAddToCart, onBuyNow, onGoBack }) => {
                           handleImageUploadSimulate(src);
                           setIsUploadModalOpen(false);
                         }}
-                        style={styles.recentImgCard}
+                        style={{
+                          height: '76px',
+                          borderRadius: '6px',
+                          border: '1.5px solid #cbd5e1',
+                          overflow: 'hidden',
+                          cursor: 'pointer',
+                          backgroundColor: '#ffffff',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          padding: '4px',
+                          boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                          transition: 'all 0.15s ease'
+                        }}
+                        onMouseOver={(e) => e.currentTarget.style.borderColor = '#0f62fe'}
+                        onMouseOut={(e) => e.currentTarget.style.borderColor = '#cbd5e1'}
                       >
-                        <img src={src} alt="recent upload" style={{width:'100%', height:'100%', objectFit:'cover'}} />
+                        <img src={src} alt="recent upload" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                       </div>
                     ))}
                   </div>
@@ -2625,13 +3035,14 @@ const styles = {
   },
   safetyGuideLine: {
     position: 'absolute',
-    top: '10px',
-    left: '10px',
-    right: '10px',
-    bottom: '10px',
-    border: '1px dotted rgba(21, 161, 226, 0.4)',
+    top: '12px',
+    left: '12px',
+    right: '12px',
+    bottom: '12px',
+    border: '1px dotted #16a34a',
     pointerEvents: 'none',
-    borderRadius: '2px'
+    borderRadius: '2px',
+    zIndex: '5'
   },
   bleedGuideLine: {
     position: 'absolute',
@@ -2639,8 +3050,9 @@ const styles = {
     left: '4px',
     right: '4px',
     bottom: '4px',
-    border: '1px dashed rgba(220, 38, 38, 0.35)',
-    pointerEvents: 'none'
+    border: '1px dotted #2563eb',
+    pointerEvents: 'none',
+    zIndex: '5'
   },
   rotateHandleAnchor: {
     position: 'absolute',
