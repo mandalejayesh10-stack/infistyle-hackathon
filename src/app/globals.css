@@ -1,0 +1,118 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #F5B800;
+  --color-primary-hover: #DDA600;
+  --color-brand-border: #F5B800;
+  --color-dark-charcoal: #1A1A1A;
+  --font-sans: 'Outfit', 'Inter', sans-serif;
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #1A1A1A;
+  --primary: #F5B800;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: 'Outfit', 'Inter', sans-serif;
+  overflow-x: hidden;
+}
+
+/* Custom Yellow Border Utility Classes */
+.border-yellow {
+  border: 2px solid #F5B800;
+}
+
+.border-yellow-thin {
+  border: 1px solid #F5B800;
+}
+
+.focus-yellow:focus {
+  outline: none;
+  border-color: #F5B800;
+  box-shadow: 0 0 0 2px rgba(245, 184, 0, 0.2);
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #ffffff;
+}
+::-webkit-scrollbar-thumb {
+  background: #F5B800;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #DDA600;
+}
+
+/* Card and Hover effects */
+.brand-card {
+  background: #ffffff;
+  border: 2px solid #F5B800;
+  border-radius: 12px;
+  transition: all 0.2s ease-in-out;
+}
+.brand-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 4px 4px 0px 0px #F5B800;
+}
+
+/* Buttons */
+.btn-primary {
+  background-color: #F5B800;
+  color: #1A1A1A;
+  border: 2px solid #F5B800;
+  font-weight: 600;
+  padding: 0.5rem 1.25rem;
+  border-radius: 9999px;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.btn-primary:hover {
+  background-color: #ffffff;
+  color: #1A1A1A;
+  border-color: #F5B800;
+}
+
+.btn-secondary {
+  background-color: #ffffff;
+  color: #1A1A1A;
+  border: 2px solid #F5B800;
+  font-weight: 600;
+  padding: 0.5rem 1.25rem;
+  border-radius: 9999px;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.btn-secondary:hover {
+  background-color: #F5B800;
+  color: #1A1A1A;
+}
+
+/* Inputs */
+.input-brand {
+  border: 2px solid #F5B800;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  color: #1A1A1A;
+  background-color: #ffffff;
+  transition: all 0.2s ease;
+}
+.input-brand:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(245, 184, 0, 0.25);
+}
