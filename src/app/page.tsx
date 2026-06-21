@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { PRODUCT_CATALOG } from '@/lib/catalog';
-import { Palette, QrCode, Rotate3d, Compass, ArrowRight, ShieldCheck, CreditCard, Sparkles, MapPin, Eye } from 'lucide-react';
+import { QrCode, ArrowRight, ShieldCheck, CreditCard, Sparkles, MapPin, Eye } from 'lucide-react';
 
 export default async function Home() {
   const featuredCategories = PRODUCT_CATALOG.slice(0, 6);
@@ -66,59 +66,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* 2. core Feature Pillars */}
-      <section className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-3xl mx-auto mb-12">
-          <h2 className="text-3xl font-black text-dark-charcoal">
-            Premium Features Applied To <span className="text-primary">Every Product</span>
-          </h2>
-          <p className="text-sm text-gray-500 font-bold mt-2">
-            No design experience required. Our editor handles all customization parameters.
-          </p>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="brand-card p-6 text-center space-y-3">
-            <div className="h-12 w-12 rounded-full bg-yellow-50 border-2 border-primary mx-auto flex items-center justify-center">
-              <Palette className="h-6 w-6 text-primary" />
-            </div>
-            <h3 className="font-extrabold text-base text-dark-charcoal">Full Design Editor</h3>
-            <p className="text-xs text-gray-500 font-semibold leading-relaxed">
-              Add custom texts, upload assets, change backgrounds, and configure front and back canvases in real-time.
-            </p>
-          </div>
-
-          <div className="brand-card p-6 text-center space-y-3">
-            <div className="h-12 w-12 rounded-full bg-yellow-50 border-2 border-primary mx-auto flex items-center justify-center">
-              <QrCode className="h-6 w-6 text-primary" />
-            </div>
-            <h3 className="font-extrabold text-base text-dark-charcoal">Scannable QR Generator</h3>
-            <p className="text-xs text-gray-500 font-semibold leading-relaxed">
-              Generate and position real, scannable QR codes encoding URLs, text payloads, or vCard details.
-            </p>
-          </div>
-
-          <div className="brand-card p-6 text-center space-y-3">
-            <div className="h-12 w-12 rounded-full bg-yellow-50 border-2 border-primary mx-auto flex items-center justify-center">
-              <Rotate3d className="h-6 w-6 text-primary" />
-            </div>
-            <h3 className="font-extrabold text-base text-dark-charcoal">360 3D Rotator Preview</h3>
-            <p className="text-xs text-gray-500 font-semibold leading-relaxed">
-              Drag-to-rotate in 3D space to preview both front and back print margins. Download PDF proofs instantly.
-            </p>
-          </div>
-
-          <div className="brand-card p-6 text-center space-y-3">
-            <div className="h-12 w-12 rounded-full bg-yellow-50 border-2 border-primary mx-auto flex items-center justify-center">
-              <Compass className="h-6 w-6 text-primary" />
-            </div>
-            <h3 className="font-extrabold text-base text-dark-charcoal">Location Autocomplete</h3>
-            <p className="text-xs text-gray-500 font-semibold leading-relaxed">
-              Checkout quickly with Google Places location search and single-click GPS address lookup.
-            </p>
-          </div>
-        </div>
-      </section>
 
       {/* 3. Featured Categories Grid */}
       <section className="py-16 bg-yellow-50/20 border-t border-b border-primary/20">
