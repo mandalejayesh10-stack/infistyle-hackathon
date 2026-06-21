@@ -28,20 +28,25 @@ export default function ProductDetailContent() {
 
   useEffect(() => {
     const fetchDbProduct = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('products')
-          .select('*')
-          .eq('slug', slug)
-          .single();
-        
-        if (!error && data) {
-          setDbProduct(data);
-          setLoadingDb(false);
-          return;
+      const hasSupabase = process.env.NEXT_PUBLIC_SUPABASE_URL && 
+                          process.env.NEXT_PUBLIC_SUPABASE_URL !== 'https://placeholder-url.supabase.co';
+
+      if (hasSupabase) {
+        try {
+          const { data, error } = await supabase
+            .from('products')
+            .select('*')
+            .eq('slug', slug)
+            .single();
+          
+          if (!error && data) {
+            setDbProduct(data);
+            setLoadingDb(false);
+            return;
+          }
+        } catch (err) {
+          console.error('Error fetching dynamic product details:', err);
         }
-      } catch (err) {
-        console.error('Error fetching dynamic product details:', err);
       }
 
       // Check localStorage fallback

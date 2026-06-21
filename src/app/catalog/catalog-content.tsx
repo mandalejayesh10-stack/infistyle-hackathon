@@ -32,17 +32,23 @@ export default function CatalogContent() {
     const fetchProducts = async () => {
       setLoading(true);
       let supabaseProds: any[] = [];
-      try {
-        const { data, error } = await supabase
-          .from('products')
-          .select('*')
-          .order('name', { ascending: true });
+      
+      const hasSupabase = process.env.NEXT_PUBLIC_SUPABASE_URL && 
+                          process.env.NEXT_PUBLIC_SUPABASE_URL !== 'https://placeholder-url.supabase.co';
 
-        if (!error && data) {
-          supabaseProds = data;
+      if (hasSupabase) {
+        try {
+          const { data, error } = await supabase
+            .from('products')
+            .select('*')
+            .order('name', { ascending: true });
+
+          if (!error && data) {
+            supabaseProds = data;
+          }
+        } catch (err) {
+          console.error('Error fetching from Supabase:', err);
         }
-      } catch (err) {
-        console.error('Error fetching from Supabase:', err);
       }
 
       // Merge localStorage custom products
