@@ -395,6 +395,57 @@ export default function AdminDashboard() {
     }
   };
 
+  // Delete product from Supabase and cache, or reset default catalog items
+  const handleDeleteProduct = async (prodId: string, slug: string) => {
+    if (!confirm('Are you sure you want to delete this product? For default catalog products, this will reset them to their default state.')) {
+      return;
+    }
+
+    // 1. Remove from localStorage cache
+    try {
+      const localProdsJson = localStorage.getItem('infistyle_custom_products');
+      if (localProdsJson) {
+        const localProds = JSON.parse(localProdsJson);
+        const filtered = localProds.filter((p: any) => p.slug !== slug);
+        localStorage.setItem('infistyle_custom_products', JSON.stringify(filtered));
+      }
+    } catch (err) {
+      console.error('Error deleting product from local cache:', err);
+    }
+
+    // 2. Delete from Supabase
+    try {
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', prodId);
+
+      if (error) throw error;
+      setToast('Product deleted from database.');
+    } catch (err) {
+      console.error('Error deleting product from Supabase:', err);
+      setToast('Product reverted to catalog default.');
+    }
+
+    // 3. Update UI state: revert static catalog item or remove custom item
+    const staticItem = PRODUCT_CATALOG.flatMap(c => c.items.map(item => ({ item, catName: c.name }))).find(x => x.item.slug === slug);
+    if (staticItem) {
+      setProductsList(productsList.map(p => p.slug === slug ? {
+        id: slug,
+        name: staticItem.item.name,
+        slug: slug,
+        category: staticItem.catName,
+        base_price: staticItem.item.price,
+        features: staticItem.item.features,
+        images: []
+      } : p));
+    } else {
+      setProductsList(productsList.filter(p => p.id !== prodId && p.slug !== slug));
+    }
+
+    setTimeout(() => setToast(''), 3000);
+  };
+
   // Metrics
   const totalRevenue = orders.reduce((acc, o) => acc + o.total, 0);
   const pendingCount = orders.filter(o => o.status !== 'delivered').length;
@@ -622,12 +673,18 @@ export default function AdminDashboard() {
                           <span>None</span>
                         )}
                       </td>
-                      <td className="py-3 text-right">
+                      <td className="py-3 text-right flex items-center justify-end gap-3.5">
                         <button
                           onClick={() => handleOpenEditProduct(prod)}
-                          className="text-xs text-primary hover:underline font-bold flex items-center gap-1 ml-auto cursor-pointer"
+                          className="text-xs text-primary hover:underline font-bold flex items-center gap-1 cursor-pointer"
                         >
-                          <Edit3 className="h-3.5 w-3.5" /> Edit Product
+                          <Edit3 className="h-3.5 w-3.5" /> Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeleteProduct(prod.id, prod.slug)}
+                          className="text-xs text-red-500 hover:underline font-bold flex items-center gap-1 cursor-pointer"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" /> Delete
                         </button>
                       </td>
                     </tr>
