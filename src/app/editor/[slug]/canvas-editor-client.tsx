@@ -44,6 +44,9 @@ export default function CanvasEditorClient() {
 
   // Preview Modal & Checkout Drawer states
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [frontPreviewUrl, setFrontPreviewUrl] = useState('');
+  const [backPreviewUrl, setBackPreviewUrl] = useState('');
   const [dragRotation, setDragRotation] = useState<{ x: number; y: number }>({ x: -15, y: 15 });
   const [isDragging, setIsDragging] = useState(false);
   const dragStart = useRef({ x: 0, y: 0 });
@@ -329,6 +332,50 @@ export default function CanvasEditorClient() {
     setIsDragging(false);
   };
 
+  // Render high-res snapshots of front and back designs for the 3D rotating preview
+  const handleOpenPreview = async () => {
+    if (!canvasRef.current) return;
+    setPreviewLoading(true);
+
+    const originalSide = activeSide;
+    const currentJson = JSON.stringify(canvasRef.current.toJSON());
+
+    let fJson = activeSide === 'front' ? currentJson : frontJson;
+    let bJson = activeSide === 'back' ? currentJson : backJson;
+
+    try {
+      // 1. Render and export Front side
+      if (fJson) {
+        await canvasRef.current.loadFromJSON(JSON.parse(fJson));
+      } else {
+        canvasRef.current.clear();
+        canvasRef.current.backgroundColor = '#ffffff';
+      }
+      canvasRef.current.renderAll();
+      const fDataUrl = canvasRef.current.toDataURL({ format: 'png', quality: 1.0, multiplier: 1.5 });
+      setFrontPreviewUrl(fDataUrl);
+
+      // 2. Render and export Back side
+      if (bJson && bJson !== '{"objects":[]}') {
+        await canvasRef.current.loadFromJSON(JSON.parse(bJson));
+        canvasRef.current.renderAll();
+        const bDataUrl = canvasRef.current.toDataURL({ format: 'png', quality: 1.0, multiplier: 1.5 });
+        setBackPreviewUrl(bDataUrl);
+      } else {
+        setBackPreviewUrl('');
+      }
+
+      // 3. Restore active canvas state
+      await canvasRef.current.loadFromJSON(JSON.parse(currentJson));
+      canvasRef.current.renderAll();
+    } catch (err) {
+      console.error('Error generating 3D previews:', err);
+    }
+
+    setPreviewLoading(false);
+    setPreviewOpen(true);
+  };
+
   // PDF proof generator (async/await compatible with Fabric v6)
   const handleDownloadPDF = async () => {
     if (!canvasRef.current) return;
@@ -431,9 +478,13 @@ export default function CanvasEditorClient() {
 
         <div className="flex items-center gap-3">
           <button
-            onClick={() => setPreviewOpen(true)}
-            className="btn-secondary py-1.5 px-4 text-xs"
+            onClick={handleOpenPreview}
+            disabled={previewLoading}
+            className="btn-secondary py-1.5 px-4 text-xs disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
           >
+            {previewLoading && (
+              <span className="animate-spin h-3 w-3 border-2 border-primary border-t-transparent rounded-full"></span>
+            )}
             Preview 3D
           </button>
           <button
@@ -739,26 +790,40 @@ export default function CanvasEditorClient() {
             >
               {/* CSS 3D Card flips based on rotateX / rotateY states */}
               <div 
-                className="w-[450px] h-[280px] relative transition-transform duration-75 select-none cursor-grab active:cursor-grabbing preserve-3d"
+                className={`w-[450px] h-[280px] relative select-none cursor-grab active:cursor-grabbing preserve-3d ${
+                  isDragging ? 'transition-none' : 'transition-transform duration-500 ease-out'
+                }`}
                 style={{
                   transform: `rotateY(${dragRotation.y}deg) rotateX(${dragRotation.x}deg)`
                 }}
               >
                 {/* Front face of card */}
-                <div className="absolute inset-0 bg-white text-dark-charcoal rounded-xl border border-yellow-500/30 flex flex-col items-center justify-center p-4 backface-hidden shadow-2xl overflow-hidden">
-                  <div className="text-center font-extrabold text-xs uppercase tracking-widest text-primary border border-primary/50 px-2 py-0.5 rounded mb-4">
+                <div className="absolute inset-0 bg-white text-dark-charcoal rounded-xl border border-yellow-500/30 flex flex-col items-center justify-center backface-hidden shadow-2xl overflow-hidden">
+                  <div className="absolute top-4 z-10 text-center font-extrabold text-[10px] uppercase tracking-widest text-primary border border-primary/50 bg-white/90 px-2.5 py-0.5 rounded shadow-sm">
                     FRONT DESIGN PREVIEW
                   </div>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={category.image} alt="front" className="h-28 object-cover rounded border border-primary/20 w-44" />
+                  {frontPreviewUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={frontPreviewUrl} alt="front" className="w-full h-full object-contain bg-white" />
+                  ) : (
+                    <div className="text-xs text-gray-400 font-bold">Rendering front design...</div>
+                  )}
                 </div>
 
                 {/* Back face of card (rotated 180 deg Y) */}
-                <div className="absolute inset-0 bg-white text-dark-charcoal rounded-xl border border-yellow-500/30 flex flex-col items-center justify-center p-4 backface-hidden shadow-2xl rotate-y-180 overflow-hidden">
-                  <div className="text-center font-extrabold text-xs uppercase tracking-widest text-primary border border-primary/50 px-2 py-0.5 rounded mb-4">
+                <div className="absolute inset-0 bg-white text-dark-charcoal rounded-xl border border-yellow-500/30 flex flex-col items-center justify-center backface-hidden shadow-2xl rotate-y-180 overflow-hidden">
+                  <div className="absolute top-4 z-10 text-center font-extrabold text-[10px] uppercase tracking-widest text-primary border border-primary/50 bg-white/90 px-2.5 py-0.5 rounded shadow-sm">
                     BACK DESIGN PREVIEW
                   </div>
-                  <div className="w-10 h-10 border border-primary rounded-full flex items-center justify-center font-bold text-[10px]">Back</div>
+                  {backPreviewUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={backPreviewUrl} alt="back" className="w-full h-full object-contain bg-white" />
+                  ) : (
+                    <div className="text-center font-bold text-gray-400 text-xs">
+                      <p>Blank Back Side</p>
+                      <span className="text-[10px] text-gray-300 font-semibold mt-1 block">No custom design added to back</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
