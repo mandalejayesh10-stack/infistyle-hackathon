@@ -37,31 +37,40 @@ export default async function Home() {
             </div>
           </div>
 
-          <div className="lg:col-span-5 relative hidden lg:block">
-            {/* Visual Abstract Hero Card */}
-            <div className="brand-card p-8 bg-white rotate-3 shadow-xl max-w-sm mx-auto border-4 border-primary">
-              <div className="h-10 w-10 rounded-full bg-primary mb-4 flex items-center justify-center font-extrabold text-dark-charcoal">
-                inf
-              </div>
-              <h2 className="text-2xl font-black text-dark-charcoal">Standard Visiting Card</h2>
-              <div className="h-2 w-20 bg-primary my-3 rounded-full"></div>
-              <p className="text-xs text-gray-500 font-bold mb-6">
-                Premium 350 GSM • Rounded Corners • Soft Touch Matte Finish
-              </p>
-              
-              {/* Dummy QR code */}
-              <div className="border-2 border-primary p-2 rounded-xl inline-block bg-yellow-50/20">
-                <QrCode className="h-16 w-16 text-dark-charcoal" />
-              </div>
-
-              <div className="mt-8 pt-4 border-t-2 border-primary flex justify-between items-center text-xs font-black">
-                <span className="text-gray-400 uppercase tracking-widest">Infistyle India</span>
-                <span className="text-primary font-black">₹200.00</span>
+          <div className="lg:col-span-5 relative hidden lg:block h-[450px]">
+            {/* Main Mockup: Model with Business Card */}
+            <div className="absolute top-0 right-4 w-72 h-[380px] brand-card bg-white shadow-2xl rotate-2 transition-transform duration-300 hover:rotate-0 hover:scale-105 overflow-hidden z-10">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img 
+                src="/ai_model_visiting_card.png" 
+                alt="Model with Custom Business Card" 
+                className="w-full h-[280px] object-cover" 
+              />
+              <div className="p-4 bg-white border-t border-primary/20">
+                <span className="text-[10px] font-black text-primary uppercase tracking-widest block">Visiting Cards</span>
+                <h3 className="font-extrabold text-sm text-dark-charcoal mt-0.5">Premium Matte Finish</h3>
               </div>
             </div>
+
+            {/* Overlapping Mockup: Model with Custom Apparel */}
+            <div className="absolute bottom-4 left-4 w-56 h-[260px] brand-card bg-white shadow-xl -rotate-6 transition-transform duration-300 hover:rotate-0 hover:scale-105 overflow-hidden z-20">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img 
+                src="/ai_model_polo_tshirt.png" 
+                alt="Model with Branded Apparel" 
+                className="w-full h-[170px] object-cover" 
+              />
+              <div className="p-3 bg-white border-t border-primary/20">
+                <span className="text-[9px] font-black text-primary uppercase tracking-widest block">Apparel & Caps</span>
+                <h3 className="font-extrabold text-xs text-dark-charcoal mt-0.5">Custom Pique Polo Shirts</h3>
+              </div>
+            </div>
+
             {/* background circle decor */}
-            <div className="absolute -top-10 -right-10 h-72 w-72 rounded-full bg-primary/10 -z-10 blur-xl"></div>
+            <div className="absolute -top-10 -right-10 h-72 w-72 rounded-full bg-primary/15 -z-10 blur-2xl"></div>
+            <div className="absolute -bottom-10 -left-10 h-72 w-72 rounded-full bg-primary/10 -z-10 blur-2xl"></div>
           </div>
+
 
         </div>
       </section>

@@ -19,7 +19,7 @@ export const PRODUCT_CATALOG: Category[] = [
     name: 'Visiting Cards',
     slug: 'visiting-cards',
     description: 'Premium cardstock and special cuts to elevate your professional network.',
-    image: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=600&q=80',
+    image: '/ai_model_visiting_card.png',
     items: [
       { name: 'Standard Visiting Cards', slug: 'standard-visiting-cards', price: 200, features: ['Standard 3.5" x 2.0" size', 'Glossy or matte finish', '350 GSM premium cardstock', 'Double-sided printing'] },
       { name: 'Classic', slug: 'classic-visiting-cards', price: 250, features: ['Classic texture options', 'Sturdy 400 GSM cardstock', 'Professional look & feel'] },
@@ -127,7 +127,7 @@ export const PRODUCT_CATALOG: Category[] = [
     name: 'Clothing',
     slug: 'clothing-caps-bags',
     description: 'Custom t-shirts, caps, and embroidered backpacks.',
-    image: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=600&q=80',
+    image: '/ai_model_man_polo_tshirt.png',
     items: [
       { name: "Men's T-Shirts", slug: 'mens-t-shirts', price: 350, features: ['100% combed cotton jersey', '180 GSM bio-washed pre-shrunk'] },
       { name: "Women's T-Shirts", slug: 'womens-t-shirts', price: 350, features: ['Premium soft combed cotton', 'Contoured feminine layout'] },
@@ -173,7 +173,7 @@ export const PRODUCT_CATALOG: Category[] = [
     name: 'Custom Polo T-shirts', // Displayed as Custom Polo T-shirts
     slug: 'custom-polo-t-shirts',
     description: 'Premium pique custom branded polo shirts.',
-    image: 'https://images.unsplash.com/photo-1581655353564-df123a1eb820?auto=format&fit=crop&w=600&q=80',
+    image: '/ai_model_polo_tshirt.png',
     items: [
       { name: "Men's Polo", slug: 'mens-polo', price: 490, features: ['240 GSM heavy cotton pique fabric', 'Ribbed collar and cuffs'] },
       { name: "Women's Polo", slug: 'womens-polo', price: 490, features: ['Contoured ladies styling fit', 'Soft pique cotton blend'] },
@@ -186,7 +186,7 @@ export const PRODUCT_CATALOG: Category[] = [
     name: 'Umbrellas',
     slug: 'umbrellas-rainwear',
     description: 'Custom folding umbrellas, raincoats, and large patio garden umbrellas.',
-    image: 'https://images.unsplash.com/photo-1527856263669-12c3a0af2aa6?auto=format&fit=crop&w=600&q=80',
+    image: '/ai_model_rainwear.png',
     items: [
       { name: 'Custom Umbrellas', slug: 'custom-umbrellas', price: 380, features: ['21-inch folding auto-open frame', 'Windproof fiberglass ribs'] },
       { name: 'Raincoats', slug: 'raincoats', price: 600, features: ['100% waterproof polyester PVC', 'Reflective security strip on back'] },
@@ -197,7 +197,7 @@ export const PRODUCT_CATALOG: Category[] = [
     name: 'Mugs',
     slug: 'mugs-albums-gifts',
     description: 'Ceramic mugs, magic heat-reveal mugs, lay-flat albums, and gifts.',
-    image: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=600&q=80',
+    image: '/personalised_coffee_mug.png',
     items: [
       { name: 'Photo Mugs', slug: 'photo-mugs', price: 180, features: ['Premium 325ml glossy ceramic', 'Dishwasher & microwave safe'] },
       { name: 'Magic Mugs', slug: 'magic-mugs', price: 290, features: ['Thermo-reactive black coating', 'Design appears when hot'] },
