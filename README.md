@@ -1,5 +1,11 @@
 # Infistyle India — Custom Printing E-Commerce Platform
 
+### 🚀 Live Deployment Links:
+* **Live Website:** [https://infistyle-hackathon-1l93.vercel.app/](https://infistyle-hackathon-1l93.vercel.app/)
+* **Admin Dashboard:** [https://infistyle-hackathon-1l93.vercel.app/admin](https://infistyle-hackathon-1l93.vercel.app/admin)
+
+---
+
 A production-ready custom online printing e-commerce platform built with **Next.js 14/15/16 App Router**, **TypeScript**, **Tailwind CSS**, **Supabase (Auth + DB + Storage)**, **Razorpay Payments**, and **Google Maps Platform**.
 
 Developed under the brand guidelines of **Infistyle India** with the signature Yellow (`#F5B800`) and White design language.
